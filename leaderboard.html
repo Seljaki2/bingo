@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Quiz Bingo — Leaderboard</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-8 flex items-center justify-center font-sans">
+<main class="max-w-3xl w-full bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-100 p-8 space-y-6">
+    <header class="text-center">
+        <div class="flex items-center justify-center gap-3 mb-3">
+            🏆 <h1 class="text-3xl font-bold text-gray-800">Leaderboard</h1> 🏆
+        </div>
+        <p class="text-gray-500">Top players by grade level</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-2 border-b pb-3">
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 bg-yellow-200" data-tab="1-3">Grades 1–3</button>
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-tab="4-6">Grades 4–6</button>
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-tab="7-9">Grades 7–9</button>
+    </div>
+
+    <!-- Leaderboard Lists -->
+    <section id="leaderboard-container" class="space-y-3 mt-4"></section>
+
+    <button id="backButton" class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">
+        Back to Menu
+    </button>
+
+    <footer class="text-center pt-4 text-sm text-gray-500 border-t border-gray-200">
+        <span class="font-semibold">Digitalna Brigada</span>
+    </footer>
+</main>
+
+<script>
+    const leaderboardData = {
+        "1-3": [
+            { name: "Emma Johnson", score: 245 },
+            { name: "Liam Smith", score: 230 },
+            { name: "Olivia Brown", score: 218 },
+            { name: "Noah Davis", score: 205 },
+            { name: "Ava Wilson", score: 192 }
+        ],
+        "4-6": [
+            { name: "Ethan Rodriguez", score: 312 },
+            { name: "Charlotte Taylor", score: 298 },
+            { name: "Alexander Moore", score: 285 },
+            { name: "Amelia Jackson", score: 272 },
+            { name: "James White", score: 260 }
+        ],
+        "7-9": [
+            { name: "Daniel Allen", score: 385 },
+            { name: "Emily Young", score: 372 },
+            { name: "Matthew King", score: 358 },
+            { name: "Sofia Wright", score: 345 },
+            { name: "David Lopez", score: 332 }
+        ]
+    };
+
+    const container = document.getElementById("leaderboard-container");
+
+    function renderLeaderboard(grade) {
+        container.innerHTML = "";
+        const entries = leaderboardData[grade];
+        entries.forEach((entry, i) => {
+            const div = document.createElement("div");
+            div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${
+                i < 3 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300" : "bg-white border-gray-200"
+            }`;
+            div.innerHTML = `
+          <div class="flex items-center gap-3">
+            <span class="w-6 text-center font-semibold">${i + 1}</span>
+            <span>${entry.name}</span>
+          </div>
+          <p class="text-lg font-medium">${entry.score} pts</p>
+        `;
+            container.appendChild(div);
+        });
+    }
+
+    document.querySelectorAll(".tab-button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+            document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("bg-yellow-200"));
+            btn.classList.add("bg-yellow-200");
+            renderLeaderboard(btn.dataset.tab);
+        });
+    });
+
+    document.getElementById("backButton").addEventListener("click", () => {
+        window.location.href = "index.html"; // Go back to main page
+    });
+
+    // Load default tab
+    renderLeaderboard("1-3");
+</script>
+</body>
+</html>
