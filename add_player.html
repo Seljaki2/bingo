@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Add / Login Player</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center min-h-screen font-sans">
+<main class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-6 w-full max-w-sm space-y-5">
+    <header class="text-center">
+        <h1 class="text-2xl font-bold text-gray-800">Add / Login Player</h1>
+        <p class="text-gray-500 text-sm mt-1">Register or login below</p>
+    </header>
+
+    <!-- Tabs -->
+    <div class="flex justify-center gap-3 mb-4">
+        <button id="tab-register" class="px-4 py-2 rounded-lg bg-gray-200 font-semibold">
+            Register
+        </button>
+        <button id="tab-login" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold">
+            Login
+        </button>
+    </div>
+
+    <!-- Register form -->
+    <form id="register-form" class="space-y-4 hidden">
+        <input type="text" id="r_username" placeholder="Username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <input type="text" id="r_first_name" placeholder="First Name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <input type="text" id="r_last_name" placeholder="Last Name" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <input type="password" id="r_password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Register</button>
+    </form>
+
+    <!-- Login form -->
+    <form id="login-form" class="space-y-4">
+        <input type="text" id="l_username" placeholder="Username" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <input type="password" id="l_password" placeholder="Password" required class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-400 outline-none">
+        <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Login</button>
+    </form>
+
+    <p id="message" class="text-center text-sm text-gray-600"></p>
+</main>
+
+<script>
+    const registerTab = document.getElementById('tab-register');
+    const loginTab = document.getElementById('tab-login');
+    const registerForm = document.getElementById('register-form');
+    const loginForm = document.getElementById('login-form');
+    const msg = document.getElementById('message');
+
+    // Tab switching
+    registerTab.addEventListener('click', () => {
+        registerTab.classList.replace('bg-gray-200', 'bg-blue-600');
+        registerTab.classList.add('text-white');
+        loginTab.classList.replace('bg-blue-600', 'bg-gray-200');
+        loginTab.classList.remove('text-white');
+        registerForm.classList.remove('hidden');
+        loginForm.classList.add('hidden');
+        msg.textContent = '';
+    });
+
+    loginTab.addEventListener('click', () => {
+        loginTab.classList.replace('bg-gray-200', 'bg-blue-600');
+        loginTab.classList.add('text-white');
+        registerTab.classList.replace('bg-blue-600', 'bg-gray-200');
+        registerTab.classList.remove('text-white');
+        loginForm.classList.remove('hidden');
+        registerForm.classList.add('hidden');
+        msg.textContent = '';
+    });
+
+    // Register submit
+    registerForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const player = {
+            username: document.getElementById('r_username').value.trim(),
+            first_name: document.getElementById('r_first_name').value.trim(),
+            last_name: document.getElementById('r_last_name').value.trim(),
+            password: document.getElementById('r_password').value.trim(),
+        };
+        const res = await window.api.registerPlayer(player);
+        msg.textContent = res.success ? '✅ Registered!' : '❌ ' + res.error;
+        msg.className = res.success
+            ? 'text-center text-green-600 text-sm'
+            : 'text-center text-red-600 text-sm';
+    });
+
+    // Login submit
+    loginForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const creds = {
+            username: document.getElementById('l_username').value.trim(),
+            password: document.getElementById('l_password').value.trim(),
+        };
+        const res = await window.api.loginPlayer(creds);
+        msg.textContent = res.success ? '✅ Logged in!' : '❌ ' + res.error;
+        msg.className = res.success
+            ? 'text-center text-green-600 text-sm'
+            : 'text-center text-red-600 text-sm';
+    });
+</script>
+</body>
+</html>
