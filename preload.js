@@ -11,7 +11,7 @@ contextBridge.exposeInMainWorld('api', {
     loginPlayer: (creds) => ipcRenderer.invoke('login-player', creds),
     onPlayerAdded: (callback) => ipcRenderer.on('player-added', (_, player) => callback(player)),
     loadMenu: () => ipcRenderer.invoke('loadMenu'),
-    leaderboard: (group) => ipcRenderer.invoke('leaderboard', { group }),
+    leaderboard: (groups, categories) => ipcRenderer.invoke('leaderboard', { groups, categories }),
     startGame: (group, categories) => ipcRenderer.invoke('startGame', { group, categories }),
     answer: (questionId, selectedIndex) => ipcRenderer.invoke('answer', { questionId, selectedIndex }),
 
