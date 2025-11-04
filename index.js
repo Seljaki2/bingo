@@ -62,7 +62,6 @@ ipcMain.handle('get-age-groups', async () => {
     return data;
 });
 
-<<<<<<< HEAD
 ipcMain.on('open-add-player', () => {
     createAddPlayerWindow();
 });
@@ -105,7 +104,7 @@ ipcMain.handle('login-player', async (_, creds) => {
         return { success: false, error: err.message };
     }
 });
-=======
+
 let currentGame = null;
 
 function createBingoBoard() {
@@ -137,7 +136,6 @@ function hasBingo(board) {
 
     return false;
 }
->>>>>>> fd0ec85 (Added game logic and scoring.)
 
 /**
  * loadMenu
