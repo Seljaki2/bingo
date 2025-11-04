@@ -3,7 +3,7 @@ async function loadAgeGroups() {
     const startBtn = document.getElementById("start-game");
     let selectedId = null;
 
-    const ageGroups = await window.api.getAgeGroups();
+    const ageGroups = (await window.api.loadMenu()).ageGroups;
 
     if (ageGroups.error) {
         container.innerHTML = `<p class="text-red-500">Error: ${ageGroups.error}</p>`;
