@@ -12,21 +12,30 @@
         <div class="flex items-center justify-center gap-3 mb-3">
             🏆 <h1 class="text-3xl font-bold text-gray-800">Leaderboard</h1> 🏆
         </div>
-        <p class="text-gray-500">Top players by grade level</p>
+        <p class="text-gray-500">Top igralci po triadah in predmetih</p>
     </header>
 
-    <!-- Tabs -->
+    <!-- Triad Tabs -->
     <div class="flex justify-center gap-2 border-b pb-3">
-        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 bg-yellow-200" data-tab="1-3">Grades 1–3</button>
-        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-tab="4-6">Grades 4–6</button>
-        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-tab="7-9">Grades 7–9</button>
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 bg-yellow-200" data-triad="t1">1. triada</button>
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-triad="t2">2. triada</button>
+        <button class="tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100" data-triad="t3">3. triada</button>
     </div>
 
-    <!-- Leaderboard Lists -->
-    <section id="leaderboard-container" class="space-y-3 mt-4"></section>
+    <!-- Subject Filters -->
+    <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+        <span class="text-sm text-gray-500 mr-2">Predmeti:</span>
+        <button class="cat-button px-3 py-1 rounded-lg border bg-white" data-key="matematika">Matematika</button>
+        <button class="cat-button px-3 py-1 rounded-lg border bg-white" data-key="druzboslovje">Družboslovje</button>
+        <button class="cat-button px-3 py-1 rounded-lg border bg-white" data-key="naravoslovje">Naravoslovje</button>
+        <button class="cat-button px-3 py-1 rounded-lg border bg-white" data-key="anglescina">Angleščina</button>
+    </div>
+
+    <!-- Leaderboard List -->
+    <section id="leaderboard-container" class="space-y-3 mt-4 min-h-[200px]"></section>
 
     <button id="backButton" class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">
-        Back to Menu
+       Meni
     </button>
 
     <footer class="text-center pt-4 text-sm text-gray-500 border-t border-gray-200">
@@ -35,65 +44,149 @@
 </main>
 
 <script>
-    const leaderboardData = {
-        "1-3": [
-            { name: "Emma Johnson", score: 245 },
-            { name: "Liam Smith", score: 230 },
-            { name: "Olivia Brown", score: 218 },
-            { name: "Noah Davis", score: 205 },
-            { name: "Ava Wilson", score: 192 }
-        ],
-        "4-6": [
-            { name: "Ethan Rodriguez", score: 312 },
-            { name: "Charlotte Taylor", score: 298 },
-            { name: "Alexander Moore", score: 285 },
-            { name: "Amelia Jackson", score: 272 },
-            { name: "James White", score: 260 }
-        ],
-        "7-9": [
-            { name: "Daniel Allen", score: 385 },
-            { name: "Emily Young", score: 372 },
-            { name: "Matthew King", score: 358 },
-            { name: "Sofia Wright", score: 345 },
-            { name: "David Lopez", score: 332 }
-        ]
-    };
+    // UI elements
+    const container = document.getElementById('leaderboard-container');
+    const triadButtons = document.querySelectorAll('.tab-button');
+    const catButtons = document.querySelectorAll('.cat-button');
 
-    const container = document.getElementById("leaderboard-container");
+    // State
+    let triads = { t1: [], t2: [], t3: [] }; // arrays of age_group ids per triad
+    let categoriesByKey = {}; // {key -> id}
+    let selectedTriad = 't1';
+    let selectedCatId = null; // only one category active at a time
 
-    function renderLeaderboard(grade) {
-        container.innerHTML = "";
-        const entries = leaderboardData[grade];
-        entries.forEach((entry, i) => {
-            const div = document.createElement("div");
-            div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${
-                i < 3 ? "bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300" : "bg-white border-gray-200"
-            }`;
+    // Helpers
+    const norm = (s) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
+
+    function setBtnActive(btn, active) {
+        if (active) {
+            btn.classList.add('bg-blue-600','text-white','border-blue-600');
+            btn.classList.remove('bg-white');
+        } else {
+            btn.classList.remove('bg-blue-600','text-white','border-blue-600');
+            btn.classList.add('bg-white');
+        }
+    }
+
+    async function initFilters() {
+        try {
+            const menu = await window.api.loadMenu();
+            const ageGroups = menu.ageGroups || [];
+            const categories = menu.categories || [];
+
+            // Build triads mapping from available age group labels
+            const t1 = [], t2 = [], t3 = [];
+            ageGroups.forEach(g => {
+                const s = norm(g.age_group);
+                if (s.includes('1-3') || s.includes('1–3') || s.includes('1 — 3') || s.includes('1 do 3') || s.includes('1– 3') || s.includes('1 - 3')) {
+                    t1.push(g.id);
+                } else if (s.includes('4-6') || s.includes('4–6') || s.includes('4 — 6') || s.includes('4 do 6') || s.includes('4 - 6')) {
+                    t2.push(g.id);
+                } else if (s.includes('7-9') || s.includes('7–9') || s.includes('7 — 9') || s.includes('7 do 9') || s.includes('7 - 9')) {
+                    t3.push(g.id);
+                }
+            });
+
+            // Fallback if labels don't contain explicit ranges: split into three buckets by order
+            if (!t1.length && !t2.length && !t3.length && ageGroups.length) {
+                const size = Math.ceil(ageGroups.length / 3);
+                t1.push(...ageGroups.slice(0, size).map(g => g.id));
+                t2.push(...ageGroups.slice(size, size * 2).map(g => g.id));
+                t3.push(...ageGroups.slice(size * 2).map(g => g.id));
+            }
+            triads = { t1, t2, t3 };
+
+            // Categories: map explicit expected order/keys
+            const byKey = {};
+            categories.forEach(c => {
+                const name = norm(c.name);
+                if (name.includes('matematika')) byKey.matematika = c.id;
+                else if (name.includes('druzboslovje')) byKey.druzboslovje = c.id;
+                else if (name.includes('naravoslovje')) byKey.naravoslovje = c.id;
+                else if (name.includes('anglescina') || name.includes('angleski') || name.includes('english')) byKey.anglescina = c.id;
+            });
+            categoriesByKey = byKey;
+
+            // Default: pick Matematika if present, otherwise first available
+            selectedCatId = byKey.matematika || Object.values(byKey)[0] || null;
+            catButtons.forEach(btn => {
+                const id = byKey[btn.dataset.key];
+                setBtnActive(btn, id && id === selectedCatId);
+            });
+
+            // First render
+            await loadAndRender();
+        } catch (e) {
+            console.error('Failed to init filters', e);
+            container.innerHTML = `<div class="p-4 rounded-lg bg-red-50 border border-red-200 text-red-700">Napaka pri nalaganju podatkov.</div>`;
+        }
+    }
+
+    async function loadAndRender() {
+        container.innerHTML = `<div class="text-center text-gray-500 py-10">Nalagam...</div>`;
+        const groupIds = triads[selectedTriad] || [];
+    const categoryIds = selectedCatId ? [selectedCatId] : [];
+        try {
+            const data = await window.api.leaderboard(groupIds, categoryIds);
+            renderList(Array.isArray(data) ? data : []);
+        } catch (e) {
+            console.error('leaderboard error', e);
+            renderList([]);
+        }
+    }
+
+    function renderList(rows) {
+        container.innerHTML = '';
+        if (!rows.length) {
+            container.innerHTML = `<div class="p-6 text-center text-gray-500 bg-white/60 rounded-xl border">Ni rezultatov za izbran predmet.</div>`;
+            return;
+        }
+        rows.forEach((row, i) => {
+            const fullName = (row.User?.first_name || '') + (row.User?.last_name ? ' ' + row.User.last_name : '') || `Uporabnik #${row.user_id}`;
+            const div = document.createElement('div');
+            div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${i < 3 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300' : 'bg-white border-gray-200'}`;
             div.innerHTML = `
-          <div class="flex items-center gap-3">
-            <span class="w-6 text-center font-semibold">${i + 1}</span>
-            <span>${entry.name}</span>
-          </div>
-          <p class="text-lg font-medium">${entry.score} pts</p>
-        `;
+                <div class="flex items-center gap-3">
+                    <span class="w-6 text-center font-semibold">${i + 1}</span>
+                    <span>${fullName}</span>
+                </div>
+                <p class="text-lg font-medium">${row.score} pts</p>
+            `;
             container.appendChild(div);
         });
     }
 
-    document.querySelectorAll(".tab-button").forEach((btn) => {
-        btn.addEventListener("click", () => {
-            document.querySelectorAll(".tab-button").forEach(b => b.classList.remove("bg-yellow-200"));
-            btn.classList.add("bg-yellow-200");
-            renderLeaderboard(btn.dataset.tab);
+    // Events
+    triadButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            triadButtons.forEach(b => b.classList.remove('bg-yellow-200'));
+            btn.classList.add('bg-yellow-200');
+            selectedTriad = btn.dataset.triad;
+            await loadAndRender();
         });
     });
 
-    document.getElementById("backButton").addEventListener("click", () => {
-        window.location.href = "index.html"; // Go back to main page
+    catButtons.forEach(btn => {
+        btn.addEventListener('click', async () => {
+            const key = btn.dataset.key;
+            const id = categoriesByKey[key];
+            if (!id) return;
+            selectedCatId = id;
+            // update visual state so only this one is active
+            catButtons.forEach(b => {
+                const bid = categoriesByKey[b.dataset.key];
+                setBtnActive(b, bid && bid === selectedCatId);
+            });
+            await loadAndRender();
+        });
     });
 
-    // Load default tab
-    renderLeaderboard("1-3");
+    document.getElementById('backButton').addEventListener('click', () => {
+        window.location.href = 'index.html';
+    });
+
+    // Initialize
+    initFilters();
 </script>
 </body>
 </html>

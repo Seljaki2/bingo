@@ -35,17 +35,18 @@
     <form class="space-y-6">
         <!-- Player Names -->
         <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Players</label>
+            <label class="block text-sm font-semibold text-gray-700 mb-2">Igralci</label>
             <div id="players-list" class="space-y-2 text-sm text-gray-600">
-                <p>No players added yet.</p>
+                <p>Ni še dodanih igralcev   .</p>
             </div>
             <button
+                    id="add-player-btn"
                     type="button"
                     class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
                     onclick="window.api.openAddPlayerWindow()"
             >
-                Add Player
-            </button>
+    Dodaj igralca
+</button>
         </div>
 
     <section>
@@ -66,7 +67,7 @@
                     class="px-6 py-3 bg-gray-300 text-white rounded-lg cursor-not-allowed transition-all"
             >
                 Začni igro ▶️
-            </button>
+            </Button>
         </div>
     </form>
 
@@ -194,15 +195,59 @@
 </script>
 <script>
     const list = document.getElementById('players-list');
+    const addBtn = document.getElementById('add-player-btn');
+    const MAX_PLAYERS = 4;
+    const playerKeys = new Set(); // ids of chosen players
+
+    function updateAddPlayerButtonState() {
+        if (players.length >= MAX_PLAYERS) {
+            addBtn.disabled = true;
+            addBtn.classList.add('bg-gray-300','cursor-not-allowed','opacity-60');
+            addBtn.classList.remove('bg-blue-600','hover:bg-blue-700');
+        } else {
+            addBtn.disabled = false;
+            addBtn.classList.remove('bg-gray-300','cursor-not-allowed','opacity-60');
+            addBtn.classList.add('bg-blue-600','hover:bg-blue-700');
+        }
+    }
+
+    // call once on load
+    updateAddPlayerButtonState();
 
     window.api.onPlayerAdded((player) => {
+        // build a unique key (prefer DB id; fallback to name combo)
+        const key = player?.id ?? `${player.first_name}::${player.last_name}`;
+
+        // prevent duplicates
+        if (playerKeys.has(String(key))) {
+            // briefly highlight existing row
+            const existing = [...list.children].find(el => el.dataset?.key === String(key));
+            if (existing) {
+                existing.classList.add('ring-2','ring-red-400');
+                setTimeout(() => existing.classList.remove('ring-2','ring-red-400'), 700);
+            }
+            return;
+        }
+
+        // enforce max 4 players
+        if (players.length >= MAX_PLAYERS) {
+            updateAddPlayerButtonState();
+            return;
+        }
+
         if (list.children[0]?.tagName === 'P') list.innerHTML = '';
+
         const item = document.createElement('div');
+        item.dataset.key = String(key);
         item.className = 'p-2 border rounded-lg bg-white added-player';
         item.textContent = `${player.first_name} ${player.last_name}`;
         list.appendChild(item);
+
         players.push(player);
+        playerKeys.add(String(key));
+
         enableStartButton();
+        updateAddPlayerButtonState();
     });
 </script>
 </body>
