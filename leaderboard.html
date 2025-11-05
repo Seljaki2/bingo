@@ -141,10 +141,19 @@
             container.innerHTML = `<div class="p-6 text-center text-gray-500 bg-white/60 rounded-xl border">Ni rezultatov za izbran predmet.</div>`;
             return;
         }
+
         rows.forEach((row, i) => {
             const fullName = (row.User?.first_name || '') + (row.User?.last_name ? ' ' + row.User.last_name : '') || `Uporabnik #${row.user_id}`;
+
+            // place-specific styles: 1st = gold, 2nd = silver, 3rd = bronze
+            const placeStyle =
+                i === 0 ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300' :
+                i === 1 ? 'bg-gradient-to-r from-slate-50 to-gray-100 border-gray-300' :
+                i === 2 ? 'bg-gradient-to-r from-amber-50 to-orange-100 border-amber-400' :
+                          'bg-white border-gray-200';
+
             const div = document.createElement('div');
-            div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${i < 3 ? 'bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300' : 'bg-white border-gray-200'}`;
+            div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${placeStyle}`;
             div.innerHTML = `
                 <div class="flex items-center gap-3">
                     <span class="w-6 text-center font-semibold">${i + 1}</span>
