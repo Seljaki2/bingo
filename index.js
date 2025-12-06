@@ -3,7 +3,7 @@ const { app, BrowserWindow, ipcMain, Menu } = require('electron/main');
 const path = require('node:path');
 
 const { createClient } = require("@supabase/supabase-js");
-const { randomUUID } = require('node:crypto');
+const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('node:crypto');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
 
 const fs = require('node:fs');
@@ -312,40 +312,69 @@ ipcMain.on('open-add-player', () => {
 
 ipcMain.handle('register-player', async (_, player) => {
     try {
+        if (!player || !player.username || !player.password) {
+            return { success: false, error: 'Missing username or password' };
+        }
+
+        const salt = randomBytes(16).toString('hex');
+        const derived = scryptSync(player.password, salt, 64).toString('hex');
+        const stored = `${salt}:${derived}`;
+
+        const toInsert = { ...player, password: stored };
+
         const { data, error } = await supabase
             .from('User')
-            .insert(player)
+            .insert(toInsert)
             .select()
             .single();
         if (error) throw error;
 
-        win.webContents.send('player-added', data);
+        const safeData = { ...data };
+        if (safeData.password) delete safeData.password;
+
+        win.webContents.send('player-added', safeData);
         add_player_window?.close();
-        return { success: true, data };
+        return { success: true, data: safeData };
     } catch (err) {
-        console.error('Error registering player:', err.message);
-        return { success: false, error: err.message };
+        console.error('Error registering player:', err.message || err);
+        return { success: false, error: err.message || String(err) };
     }
 });
 
 ipcMain.handle('login-player', async (_, creds) => {
     try {
+        if (!creds || !creds.username || !creds.password) {
+            return { success: false, error: 'Missing username or password' };
+        }
+
         const { data, error } = await supabase
             .from('User')
             .select('*')
             .eq('username', creds.username)
-            .eq('password', creds.password)
             .maybeSingle();
         if (error) throw error;
 
         if (!data) return { success: false, error: 'Invalid username or password' };
 
-        win.webContents.send('player-added', data);
+        const stored = data.password;
+        if (!stored) return { success: false, error: 'Invalid username or password' };
+
+        const [salt, hash] = stored.split(':');
+        if (!salt || !hash) return { success: false, error: 'Invalid username or password' };
+
+        const derived = scryptSync(creds.password, salt, 64).toString('hex');
+        const match = timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(derived, 'hex'));
+        if (!match) return { success: false, error: 'Invalid username or password' };
+
+        const safeData = { ...data };
+        if (safeData.password) delete safeData.password;
+
+        win.webContents.send('player-added', safeData);
         add_player_window?.close();
-        return { success: true, data };
+        return { success: true, data: safeData };
     } catch (err) {
-        console.error('Error logging in player:', err.message);
-        return { success: false, error: err.message };
+        console.error('Error logging in player:', err.message || err);
+        return { success: false, error: err.message || String(err) };
     }
 });
 
