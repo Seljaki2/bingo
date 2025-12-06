@@ -20,11 +20,10 @@
         </header>
 
         <!-- Triad Tabs -->
-        <div class="flex justify-center gap-2 border-b pb-3">
-        </div>
+        <div id="triadTabsContainer" class="flex justify-center gap-2 border-b pb-3"></div>
 
         <!-- Subject Filters -->
-        <div class="flex flex-wrap items-center justify-center gap-2 mt-4">
+        <div id="subjectFiltersContainer" class="flex flex-wrap items-center justify-center gap-2 mt-4">
             <span class="text-sm text-gray-500 mr-2">Predmeti:</span>
         </div>
 
@@ -44,16 +43,13 @@
     <script>
         // UI elements
         const container = document.getElementById('leaderboard-container');
-        const triadButtons = document.querySelectorAll('.tab-button');
-        const catButtons = document.querySelectorAll('.cat-button');
+        const triadTabsContainer = document.getElementById('triadTabsContainer');
+        const subjectFiltersContainer = document.getElementById('subjectFiltersContainer');
 
         // State
         let leaderboardData = null; // { ageGroups, categories, grouped }
         let selectedTriad = null; // age_group text
         let selectedCatId = null; // category id
-
-        // Helpers
-        const norm = (s) => (s || '').toString().normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase();
 
         function setBtnActive(btn, active) {
             if (active) {
@@ -67,12 +63,13 @@
 
         async function initFilters() {
             try {
-                leaderboardData = await window.api.leaderboard();
-                console.log("leaderboard", leaderboardData);
-                const ageGroups = leaderboardData.ageGroups || [];
-                const categories = leaderboardData.categories || [];
+                const [menu, lb] = await Promise.all([window.api.loadMenu(), window.api.leaderboard()]);
 
-                // Generate triad tabs dynamically from age groups
+                const ageGroups = (menu && menu.ageGroups) || (lb && lb.ageGroups) || [];
+                const categories = (menu && menu.categories) || [];
+
+                leaderboardData = lb && lb.grouped ? lb : { grouped: {} };
+
                 triadTabsContainer.innerHTML = '';
                 ageGroups.forEach((g, index) => {
                     const btn = document.createElement('button');
@@ -128,10 +125,13 @@
                 const section = document.createElement('div');
                 section.className = 'mb-6';
                 section.innerHTML = `
-                    <h3 class="text-lg font-semibold text-gray-800 mb-3">Igra ${gameId.slice(0, 8)}...</h3>
-                    <div class="space-y-2"></div>
+                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between bg-gray-100 p-3 rounded-lg hover:bg-gray-200" data-game="${gameId}">
+                        <span>Igra ${gameId.slice(0, 8)}...</span>
+                        <span class="arrow">▼</span>
+                    </button>
+                    <div class="game-list space-y-2" style="display: none;"></div>
                 `;
-                const listDiv = section.querySelector('.space-y-2');
+                const listDiv = section.querySelector('.game-list');
 
                 entries.forEach((row, i) => {
                     const fullName = (row.User?.first_name || '') + (row.User?.last_name ? ' ' + row.User.last_name : '') || `Uporabnik #${row.user_id}`;
@@ -179,6 +179,21 @@
                     selectedCatId = id;
                     catButtons.forEach(b => setBtnActive(b, parseInt(b.dataset.key) === selectedCatId));
                     renderGrouped();
+                });
+            });
+
+            const gameToggles = document.querySelectorAll('.game-toggle');
+            gameToggles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const list = btn.nextElementSibling;
+                    const arrow = btn.querySelector('.arrow');
+                    if (list.style.display === 'none') {
+                        list.style.display = 'block';
+                        arrow.textContent = '▲';
+                    } else {
+                        list.style.display = 'none';
+                        arrow.textContent = '▼';
+                    }
                 });
             });
         }

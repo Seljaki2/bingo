@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Dodaj predmet</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
+    <main class="w-full max-w-md bg-white/90 rounded-2xl p-6 shadow">
+        <h2 class="text-lg font-semibold mb-4">Dodaj nov predmet</h2>
+        <form id="cform" class="space-y-4">
+            <div>
+                <label class="block text-sm font-medium">Ime predmeta</label>
+                <input id="name" class="w-full px-3 py-2 border rounded" required />
+            </div>
+            <div class="flex justify-end gap-2">
+                <button type="button" onclick="window.close()" class="px-3 py-2 border rounded">Cancel</button>
+                <button type="submit" class="px-3 py-2 bg-blue-600 text-white rounded">Save</button>
+            </div>
+        </form>
+    </main>
+    <script>
+        document.getElementById('cform').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('name').value.trim();
+            if (!name) return;
+            const res = await window.api.createCategory({ name });
+            if (!res || !res.success) {
+                alert('Error: ' + (res?.error || 'unknown'));
+                return;
+            }
+            window.close();
+        });
+    </script>
+</body>
+
+</html>

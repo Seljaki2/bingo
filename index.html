@@ -82,6 +82,11 @@
         loadCategories();
         loadGrades();
 
+        window.api.onAgeGroupAdded(() => loadGrades());
+        window.api.onCategoryAdded(() => loadCategories());
+        window.api.onAgeGroupDeleted(() => loadGrades());
+        window.api.onCategoryDeleted(() => loadCategories());
+
         let isGradeSeleced = false;
         let categoriesSelected = 0;
         const selected = { grade: null, category: [] };
@@ -136,8 +141,26 @@
                     }
                 });
 
+                card.addEventListener('contextmenu', async (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const ok = confirm(`Delete category "${category.name}"?`);
+                    if (!ok) return;
+                    const res = await window.api.deleteCategory(category.id);
+                    if (!res || !res.success) {
+                        alert('Delete failed: ' + (res?.error || 'unknown'));
+                        return;
+                    }
+                    loadCategories();
+                });
+
                 categoryContainer.appendChild(card);
             });
+            const plusCat = document.createElement('div');
+            plusCat.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500";
+            plusCat.innerHTML = `<div class="text-2xl font-bold">＋</div>`;
+            plusCat.addEventListener('click', () => window.api.openAddCategoryWindow());
+            categoryContainer.appendChild(plusCat);
         }
         async function loadGrades() {
             const grades = (await window.api.loadMenu()).ageGroups;
@@ -170,6 +193,30 @@
                 });
 
                 gradeContainer.appendChild(card);
+            });
+
+            const plusGrade = document.createElement('div');
+            plusGrade.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500";
+            plusGrade.innerHTML = `<div class="text-2xl font-bold">＋</div>`;
+            plusGrade.addEventListener('click', () => window.api.openAddAgeGroupWindow());
+            gradeContainer.appendChild(plusGrade);
+
+            document.querySelectorAll('#grade-cards > div').forEach(el => {
+                const id = el.getAttribute('data-id');
+                if (!id) return;
+                el.addEventListener('contextmenu', async (ev) => {
+                    ev.preventDefault();
+                    ev.stopPropagation();
+                    const name = el.querySelector('h3')?.innerText || 'this age group';
+                    const ok = confirm(`Delete age group "${name}"?`);
+                    if (!ok) return;
+                    const res = await window.api.deleteAgeGroup(parseInt(id, 10));
+                    if (!res || !res.success) {
+                        alert('Delete failed: ' + (res?.error || 'unknown'));
+                        return;
+                    }
+                    loadGrades();
+                });
             });
 
 

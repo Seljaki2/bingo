@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { app, BrowserWindow, ipcMain } = require('electron/main');
+const { app, BrowserWindow, ipcMain, Menu } = require('electron/main');
 const path = require('node:path');
 
 const { createClient } = require("@supabase/supabase-js");
@@ -158,17 +158,26 @@ async function ensureAgeGroups() {
     }
 }
 
-let win, add_player_window;
+let win, add_player_window, add_age_group_window, add_category_window;
 
 const createWindow = () => {
     win = new BrowserWindow({
         width: 800,
-        height: 800,
+        height: 1000,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         }
     });
     win.loadFile('index.html');
+    // Remove the default application menu for a cleaner window (no tool menu)
+    try {
+        // Removes menu from this window
+        win.removeMenu();
+        // Ensure the application menu is unset (cross-platform)
+        Menu.setApplicationMenu(null);
+    } catch (e) {
+        console.warn('Could not remove menu:', e?.message || e);
+    }
 }
 
 function createAddPlayerWindow() {
@@ -176,7 +185,7 @@ function createAddPlayerWindow() {
 
     add_player_window = new BrowserWindow({
         width: 500,
-        height: 600,
+        height: 800,
         parent: win,
         modal: true,
         resizable: false,
@@ -192,8 +201,86 @@ function createAddPlayerWindow() {
     });
 }
 
+function createAddAgeGroupWindow() {
+    if (add_age_group_window) return;
+
+    add_age_group_window = new BrowserWindow({
+        width: 420,
+        height: 500,
+        parent: win,
+        modal: true,
+        resizable: false,
+        webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    });
+    add_age_group_window.loadFile('add_age_group.html');
+    add_age_group_window.on('closed', () => { add_age_group_window = null; });
+}
+
+function createAddCategoryWindow() {
+    if (add_category_window) return;
+
+    add_category_window = new BrowserWindow({
+        width: 420,
+        height: 460,
+        parent: win,
+        modal: true,
+        resizable: false,
+        webPreferences: { preload: path.join(__dirname, 'preload.js') }
+    });
+    add_category_window.loadFile('add_category.html');
+    add_category_window.on('closed', () => { add_category_window = null; });
+}
+
 app.whenReady().then(async () => {
     ipcMain.handle('ping', () => 'pong');
+    ipcMain.on('open-add-age-group', () => createAddAgeGroupWindow());
+    ipcMain.on('open-add-category', () => createAddCategoryWindow());
+
+    ipcMain.handle('create-age-group', async (_, payload) => {
+        try {
+            const { data, error } = await supabase.from('AgeGroups').insert({ age_group: payload.age_group, min_age: payload.min_age, max_age: payload.max_age }).select().single();
+            if (error) throw error;
+            win?.webContents?.send('age-group-added', data);
+            add_age_group_window?.close();
+            return { success: true, data };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
+
+    ipcMain.handle('create-category', async (_, payload) => {
+        try {
+            const { data, error } = await supabase.from('Category').insert({ name: payload.name }).select().single();
+            if (error) throw error;
+            win?.webContents?.send('category-added', data);
+            add_category_window?.close();
+            return { success: true, data };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
+
+    ipcMain.handle('delete-age-group', async (_, id) => {
+        try {
+            const { error } = await supabase.from('AgeGroups').delete().eq('id', id);
+            if (error) throw error;
+            win?.webContents?.send('age-group-deleted', id);
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
+
+    ipcMain.handle('delete-category', async (_, id) => {
+        try {
+            const { error } = await supabase.from('Category').delete().eq('id', id);
+            if (error) throw error;
+            win?.webContents?.send('category-deleted', id);
+            return { success: true };
+        } catch (err) {
+            return { success: false, error: err.message };
+        }
+    });
     try {
         await ensureSchema();
     } catch (err) {
@@ -384,7 +471,6 @@ ipcMain.handle('leaderboard', async () => {
             return acc;
         }, {});
 
-        console.log({ ageGroups, categories, grouped });
         return { ageGroups, categories, grouped };
     } catch (err) {
         console.error('Error fetching leaderboard:', err.message);
