@@ -40,4 +40,7 @@ CREATE TABLE public."Leaderboard" (
   score bigint NOT NULL,
   user_id bigint NOT NULL REFERENCES public."User"(id),
   age_group_id bigint NOT NULL REFERENCES public."AgeGroups"(id)
+  correct_num bigint NOT NULL
+  false_num bigint NOT NULL
+  game_id uuid NOT NULL
 );

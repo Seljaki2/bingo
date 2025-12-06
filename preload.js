@@ -22,6 +22,13 @@ contextBridge.exposeInMainWorld('api', {
         ipcRenderer.invoke('startGame', { group, categories, players }),
 
     // Submits an answer and returns correctness, bingo, and updated board
-    answer: (playerId, questionId, selectedIndex) =>
-        ipcRenderer.invoke('answer', { playerId, questionId, selectedIndex }),
+    // `tile` is optional: { r: number, c: number } to mark a specific board cell when correct
+    answer: (playerId, questionId, selectedIndex, tile) =>
+        ipcRenderer.invoke('answer', { playerId, questionId, selectedIndex, tile }),
+
+    endGame: () => ipcRenderer.invoke('endGame'),
+
+    // Adds a new question. `question` should include: text, answers (array), correct_answer (int),
+    // category_id, age_group_id, and optionally image_path (local file path from renderer).
+    addQuestion: (question) => ipcRenderer.invoke('addQuestion', question),
 });

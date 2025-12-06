@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -7,351 +8,471 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes clickAnimation {
-  0%   {background-color:white;}
-  25%  {background-color:red;}
-  50%  {background-color:yellow;}
-  75%  {background-color:lightgreen;}
-  100% {background-color:lightblue;}
-}
+            0% {
+                background-color: white;
+            }
+
+            25% {
+                background-color: red;
+            }
+
+            50% {
+                background-color: yellow;
+            }
+
+            75% {
+                background-color: lightgreen;
+            }
+
+            100% {
+                background-color: lightblue;
+            }
+        }
     </style>
 </head>
 
 <body class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 lg:p-10 font-sans">
-<main class="max-w-[1400px] mx-auto space-y-8">
-    <!-- Header -->
-    <div class="flex items-center justify-between">
-        <h1 class="text-3xl font-bold text-center flex-1 text-gray-800">Quiz Bingo! 🎯</h1>
-        <button
-                onclick="window.location.href='index.html'"
-                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors font-semibold">
-            Nova igra
-        </button>
-    </div>
-    <!-- Question Card -->
-    <section class="bg-white shadow-2xl rounded-2xl p-6 space-y-6">
+    <main class="max-w-[1400px] mx-auto space-y-8">
+        <!-- Header -->
         <div class="flex items-center justify-between">
-            <span id="turn" class="px-3 py-1 rounded-full bg-blue-500 text-white font-medium"></span>
-            <span class="px-3 py-1 rounded-full bg-gray-200 font-medium">⏱️ 15s</span>
-        </div>
-
-        <!-- Progress bar -->
-        <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
-            <div class="bg-blue-500 h-2 timerBar" style="width: 100%;"></div>
-        </div>
-        <div class="flex justify-center">
-        <img src="" alt="Question Image" class="hidden" width="200px" height="150px"/>
-        </div>
-        <!-- Question -->
-        <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg text-center">
-            <p id="question" class="text-lg font-medium"></p>
-        </div>
-
-        <!-- Answer buttons -->
-        <div class="grid grid-cols-2 gap-4">
-            <button id="0" class="qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
-            </button>
-            <button id="1" class="qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
-            </button>
-            <button id="2" class="qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
-            </button>
-            <button id="3" class="qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2">
+            <h1 class="text-3xl font-bold text-center flex-1 text-gray-800">Quiz Bingo! 🎯</h1>
+            <button onclick="window.location.href='index.html'"
+                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 transition-colors font-semibold">
+                Nova igra
             </button>
         </div>
-    </section>
+        <!-- Question Card -->
+        <section class="bg-white shadow-2xl rounded-2xl p-6 space-y-6">
+            <div class="flex items-center justify-between">
+                <span id="turn" class="px-3 py-1 rounded-full bg-blue-500 text-white font-medium"></span>
+                <span class="px-3 py-1 rounded-full bg-gray-200 font-medium">⏱️ 15s</span>
+            </div>
 
-    <!-- Bingo Boards (dynamic) -->
-    <section id="boards" class="grid gap-6 justify-items-center"></section>
+            <!-- Progress bar -->
+            <div class="w-full bg-gray-200 h-2 rounded-full overflow-hidden">
+                <div class="bg-blue-500 h-2 timerBar" style="width: 100%;"></div>
+            </div>
+            <div class="flex justify-center">
+                <img src="" alt="Question Image" class="hidden" width="200px" height="150px" />
+            </div>
+            <!-- Question -->
+            <div class="bg-gradient-to-r from-purple-100 to-pink-100 p-6 rounded-lg text-center">
+                <p id="question" class="text-lg font-medium"></p>
+            </div>
 
-    <div class="text-center text-sm text-gray-500 mt-8">
-        <span class="font-semibold">Digitalna Brigada</span>
-    </div>
-    <script>
-        let game = [];
-        let gameData = [];
-        let parameters = {};
-        let isCorrectAnswer = false;
-        let questionIndex = -1;
-        let limitIndex = 20;
-        let questionImage = document.querySelector("img");
-    let playerIds = [];
-    let playerNames = [];
-    let playerCount = 0;
-    let boards = [];
-    let currentPlayer = 0;
-    let gameOver = false;
-    let toastTimer = null;
+            <!-- Answer buttons -->
+            <div id="answers" class="grid grid-cols-2 gap-4"></div>
+        </section>
 
-        
-        let timerInterval;
-        let timeRemaining = 15;  // Timer starts at 15 seconds
-        const progressBar = document.querySelector('.timerBar');
-        const timerDisplay = document.querySelector('.px-3.py-1.bg-gray-200');
+        <!-- Bingo Boards (dynamic) -->
+        <section id="boards" class="grid gap-6 justify-items-center"></section>
 
-        const buttons = document.getElementsByClassName("qButtons");
-        for (var i = 0; i < buttons.length; i++) {
-            buttons[i].addEventListener('click', selectedAnswer, false);
-        }
-        window.onload = function() {
-            enterData();
-        };
-        async function enterData(){
-            console.log("Loading game data...");
-            parameters = JSON.parse(localStorage.getItem('parameters'));
-            playerCount = parameters.players.length;
-            for(let i = 0; i < playerCount; i++){
-                playerIds.push(parseInt(parameters.players[i].id));
-                playerNames.push(`${parameters.players[i].first_name} ${parameters.players[i].last_name}`);
-            }
-            console.log(parameters.players);
-            game = await window.api.startGame(parameters.grade, parameters.category, playerIds);
-            gameData = game.questions || [];
-            // initial boards from backend
-            boards = (game.players || []).map(p => p.board);
-            console.log(gameData);
-            await (shuffle(gameData));
-            console.log("Zmesano: ", gameData);
-            limitIndex = gameData.length -1;
-            renderBoards();
-            play();
-            startTimer();
-        }
-        function play(){
-            if (gameOver) return;
-            questionIndex++;
-            if(questionIndex > limitIndex){
-                questionIndex = 0;
-            }
-            if(gameData[questionIndex].image_path != undefined){
-                questionImage.classList.remove("hidden");
-                questionImage.src = "./images/" + gameData[questionIndex].image_path + ".png";
-            }
-            else{
-                questionImage.classList.add("hidden");
-            }
-            currentPlayer = questionIndex % playerCount;
-            document.getElementById("turn").innerText = playerNames[currentPlayer] + " je na vrsti";
-            highlightTurn(currentPlayer);
-            document.getElementById("question").innerText = gameData[questionIndex].text;
-            document.getElementById("0").innerText = gameData[questionIndex].options[0];
-            document.getElementById("1").innerText = gameData[questionIndex].options[1];
-            document.getElementById("2").innerText = gameData[questionIndex].options[2];
-            document.getElementById("3").innerText = gameData[questionIndex].options[3];
-            startTimer();
-        }
+        <div class="text-center text-sm text-gray-500 mt-8">
+            <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
+        </div>
+        <script>
+            let game = [];
+            let gameData = [];
+            let parameters = {};
+            // Assigned target for current question: { axis: 'row'|'col', index: 0..4 }
+            let currentAssigned = null;
+            // Currently chosen tile by the player: { r, c }
+            let currentSelectedTile = null;
+            let isCorrectAnswer = false;
+            let questionIndex = -1;
+            let limitIndex = 20;
+            let questionImage = document.querySelector("img");
+            let playerIds = [];
+            let playerNames = [];
+            let playerCount = 0;
+            let boards = [];
+            let currentPlayer = 0;
+            let gameOver = false;
+            let toastTimer = null;
 
-        async function selectedAnswer(event){
-            const button = event.target;
-            button.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-            button.style.animation = "clickAnimation 1.5s linear 0s infinite alternate";
-            if (gameOver) return;
-            const pIdx = questionIndex % playerCount;
-            console.log(pIdx, gameData[questionIndex].id, parseInt(button.id))
-            try {
-                const result = await window.api.answer(pIdx, gameData[questionIndex].id, parseInt(button.id));
-                isCorrectAnswer = !!result?.correct;
-                if (Array.isArray(result?.board)) {
-                    boards[pIdx] = result.board;
-                    updateBoard(pIdx);
+
+            let timerInterval;
+            let timeRemaining = 15;  // Timer starts at 15 seconds
+            const progressBar = document.querySelector('.timerBar');
+            const timerDisplay = document.querySelector('.px-3.py-1.bg-gray-200');
+
+            // Answer buttons will be rendered dynamically per question.
+            function renderAnswerButtons(options) {
+                const container = document.getElementById('answers');
+                container.innerHTML = '';
+                const count = Math.max(2, Math.min(4, options.length || 2));
+                // always use two columns for up to 4 buttons
+                container.className = `grid grid-cols-2 gap-4`;
+                for (let i = 0; i < count; i++) {
+                    const btn = document.createElement('button');
+                    btn.type = 'button';
+                    btn.id = String(i);
+                    btn.className = 'qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2';
+                    btn.innerText = options[i] ?? '';
+                    btn.addEventListener('click', selectedAnswer, false);
+                    container.appendChild(btn);
                 }
-                // Show feedback toast
-                if (isCorrectAnswer) {
-                    showToast(`✅ Pravilen odgovor, ${playerNames[pIdx]}!`, 'success');
+                // If there are fewer than 4 options, don't render extra buttons.
+            }
+            window.onload = function () {
+                enterData();
+            };
+            async function enterData() {
+                console.log("Loading game data...");
+                parameters = JSON.parse(localStorage.getItem('parameters'));
+                playerCount = parameters.players.length;
+                for (let i = 0; i < playerCount; i++) {
+                    playerIds.push(parseInt(parameters.players[i].id));
+                    playerNames.push(`${parameters.players[i].first_name} ${parameters.players[i].last_name}`);
+                }
+                console.log(parameters.players);
+                game = await window.api.startGame(parameters.grade, parameters.category, playerIds);
+                gameData = game.questions || [];
+                // initial boards from backend
+                boards = (game.players || []).map(p => p.board);
+                console.log(gameData);
+                await (shuffle(gameData));
+                console.log("Zmesano: ", gameData);
+                limitIndex = gameData.length - 1;
+                renderBoards();
+                play();
+                startTimer();
+            }
+            function play() {
+                if (gameOver) return;
+                questionIndex++;
+                if (questionIndex > limitIndex) {
+                    questionIndex = 0;
+                }
+                const imgPath = gameData[questionIndex].image_path;
+                if (imgPath) {
+                    questionImage.classList.remove("hidden");
+                    if (typeof imgPath === 'string' && imgPath.startsWith('data:')) {
+                        questionImage.src = imgPath;
+                    } else {
+                        questionImage.src = "./images/" + imgPath;
+                    }
                 } else {
-                    showToast(`❌ Napačen odgovor, ${playerNames[pIdx]}! Poskusi ponovno.`, 'error');
+                    questionImage.classList.add("hidden");
                 }
-                if (result?.bingo) {
-                    endGame(pIdx);
+                currentPlayer = (currentPlayer + 1) % playerCount;
+                document.getElementById("turn").innerText = playerNames[currentPlayer] + " je na vrsti";
+                highlightTurn(currentPlayer);
+                document.getElementById("question").innerText = gameData[questionIndex].text;
+                // Render buttons according to how many options this question has (2-4)
+                renderAnswerButtons(gameData[questionIndex].options || []);
+                // assign a random row/column and pick a default tile for the current player
+                assignTileForQuestion();
+                startTimer();
+            }
+
+            async function selectedAnswer(event) {
+                const button = event.target;
+                button.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
+                button.style.animation = "clickAnimation 1.5s linear 0s infinite alternate";
+                if (gameOver) return;
+                const pIdx = currentPlayer;
+                console.log(pIdx, gameData[questionIndex].id, parseInt(button.id))
+                try {
+                    disableAnswerButtons();
+                    const result = await window.api.answer(pIdx, gameData[questionIndex].id, parseInt(button.id), currentSelectedTile);
+                    isCorrectAnswer = !!result?.correct;
+                    if (Array.isArray(result?.board)) {
+                        boards[pIdx] = result.board;
+                        updateBoard(pIdx);
+                    }
+                    // Show feedback toast
+                    if (isCorrectAnswer) {
+                        showToast(`✅ Pravilen odgovor, ${playerNames[pIdx]}!`, 'success');
+                    } else {
+                        showToast(`❌ Napačen odgovor, ${playerNames[pIdx]}! Poskusi ponovno.`, 'error');
+                    }
+                    if (result?.bingo) {
+                        await endGame(pIdx);
+                    }
+                } catch (e) {
+                    console.error('answer error', e);
+                    isCorrectAnswer = false;
+                    showToast('⚠️ Prišlo je do napake pri oddaji odgovora.', 'error');
                 }
-            } catch (e) {
-                console.error('answer error', e);
-                isCorrectAnswer = false;
-                showToast('⚠️ Prišlo je do napake pri oddaji odgovora.', 'error');
+                setTimeout(function () {
+                    if (!gameOver) play();
+                    console.log(isCorrectAnswer);
+                    button.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
+                    button.classList.add("border-gray-200", "bg-white");
+                    button.style.animation = "";
+                    enableAnswerButtons();
+                }, 1000);
             }
-            setTimeout(function (){
-                console.log(isCorrectAnswer);
-                button.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-                button.classList.add("border-gray-200", "bg-white");
-                button.style.animation = "";
-                if (!gameOver) play();
-            }, 1000);
-        }
 
-        function shuffle(array) {
-            let currentIndex = array.length;
-            while (currentIndex != 0) {
-                let randomIndex = Math.floor(Math.random() * currentIndex);
-                currentIndex--;
-                [array[currentIndex], array[randomIndex]] = [
-                array[randomIndex], array[currentIndex]];
+            function shuffle(array) {
+                let currentIndex = array.length;
+                while (currentIndex != 0) {
+                    let randomIndex = Math.floor(Math.random() * currentIndex);
+                    currentIndex--;
+                    [array[currentIndex], array[randomIndex]] = [
+                        array[randomIndex], array[currentIndex]];
+                }
             }
-        }
 
-        function startTimer() {
-            if (timerInterval) {
-                clearInterval(timerInterval);
-            }
-            if (gameOver) return;
-            timeRemaining = 15;
-            updateTimerDisplay(timeRemaining);
-            updateProgressBar(timeRemaining);
-            // 1x na sekundo
-            timerInterval = setInterval(function() {
-                timeRemaining--;
+            function startTimer() {
+                if (timerInterval) {
+                    clearInterval(timerInterval);
+                }
+                if (gameOver) return;
+                timeRemaining = 15;
                 updateTimerDisplay(timeRemaining);
                 updateProgressBar(timeRemaining);
+                // 1x na sekundo
+                timerInterval = setInterval(function () {
+                    timeRemaining--;
+                    updateTimerDisplay(timeRemaining);
+                    updateProgressBar(timeRemaining);
 
-                if (timeRemaining <= 0 && !gameOver) {
-                    clearInterval(timerInterval);
-                    play();
-                }
-            }, 1000);
-        }
-
-        function updateTimerDisplay(time) {
-            timerDisplay.innerText = `⏱️ ${time}s`;
-        }
-
-        function updateProgressBar(time) {
-            if(time <= 10 && time > 5) {
-                progressBar.classList.add("bg-orange-500");
-                progressBar.classList.remove("bg-blue-500");
-            } else if(time <= 5) {
-                progressBar.classList.add("bg-rose-500");
-                progressBar.classList.remove("bg-orange-500");
-            } else {
-                progressBar.classList.add("bg-blue-500");
-                progressBar.classList.remove("bg-rose-500");
+                    if (timeRemaining <= 0 && !gameOver) {
+                        clearInterval(timerInterval);
+                        play();
+                    }
+                }, 1000);
             }
-            const percentage = (time / 15) * 100;
-            progressBar.style.width = `${percentage}%`;
-        }
 
-        // --------- Boards rendering ----------
-        function renderBoards(){
-            const container = document.getElementById('boards');
-            container.innerHTML = '';
-            const cols = Math.max(1, Math.min(playerNames.length, 4));
-            container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
-            playerNames.forEach((name, idx) => {
-                const panel = document.createElement('div');
-                panel.className = 'w-full max-w-[420px] p-4 rounded-2xl bg-white shadow-md transition-all';
-                panel.setAttribute('data-player', idx.toString());
-                panel.innerHTML = `
+            function updateTimerDisplay(time) {
+                timerDisplay.innerText = `⏱️ ${time}s`;
+            }
+
+            function updateProgressBar(time) {
+                if (time <= 10 && time > 5) {
+                    progressBar.classList.add("bg-orange-500");
+                    progressBar.classList.remove("bg-blue-500");
+                } else if (time <= 5) {
+                    progressBar.classList.add("bg-rose-500");
+                    progressBar.classList.remove("bg-orange-500");
+                } else {
+                    progressBar.classList.add("bg-blue-500");
+                    progressBar.classList.remove("bg-rose-500");
+                }
+                const percentage = (time / 15) * 100;
+                progressBar.style.width = `${percentage}%`;
+            }
+
+            // --------- Boards rendering ----------
+            function renderBoards() {
+                const container = document.getElementById('boards');
+                container.innerHTML = '';
+                const cols = Math.max(1, Math.min(playerNames.length, 4));
+                container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+                playerNames.forEach((name, idx) => {
+                    const panel = document.createElement('div');
+                    panel.className = 'w-full max-w-[420px] p-4 rounded-2xl bg-white shadow-md transition-all';
+                    panel.setAttribute('data-player', idx.toString());
+                    panel.innerHTML = `
                   <div class="mb-3 flex items-center justify-between">
                     <h3 class="flex items-center gap-2 font-semibold text-gray-800">
-                      <span class="w-3 h-3 rounded-full ${idx===0?'bg-blue-500':'bg-green-500'}"></span> ${name}
+                      <span class="w-3 h-3 rounded-full ${idx === 0 ? 'bg-blue-500' : 'bg-green-500'}"></span> ${name}
                     </h3>
                     <span class="turn-badge hidden px-2 py-1 rounded-full bg-green-500 text-white text-xs font-semibold">Your Turn! ⚡</span>
                   </div>
                   <div class="grid grid-cols-5 gap-2 board-grid"></div>`;
-                container.appendChild(panel);
-                drawBoardCells(panel.querySelector('.board-grid'), boards[idx] || createEmptyBoard());
-            });
-            highlightTurn(currentPlayer);
-        }
+                    container.appendChild(panel);
+                    drawBoardCells(panel.querySelector('.board-grid'), boards[idx] || createEmptyBoard());
+                });
+                highlightTurn(currentPlayer);
+            }
 
-        function createEmptyBoard(){
-            const b = Array.from({length:5},()=>Array(5).fill(false));
-            b[2][2]=true; // free center
-            return b;
-        }
+            function createEmptyBoard() {
+                const b = Array.from({ length: 5 }, () => Array(5).fill(false));
+                b[2][2] = true; // free center
+                return b;
+            }
 
-        function drawBoardCells(gridEl, board){
-            gridEl.innerHTML = '';
-            let n=1;
-            for(let r=0;r<5;r++){
-                for(let c=0;c<5;c++){
-                    const selected = board?.[r]?.[c];
-                    const isCenter = r===2 && c===2;
-                    const cell = document.createElement('div');
-                    cell.className = `aspect-square rounded-lg flex items-center justify-center ${selected ? (isCenter ? 'bg-yellow-400 text-white' : 'bg-blue-500 text-white shadow') : 'bg-white border-2 border-gray-200'}`;
-                    cell.textContent = isCenter ? '★' : String(n);
-                    gridEl.appendChild(cell);
-                    n++;
+            function drawBoardCells(gridEl, board) {
+                gridEl.innerHTML = '';
+                let n = 1;
+                for (let r = 0; r < 5; r++) {
+                    for (let c = 0; c < 5; c++) {
+                        const selected = board?.[r]?.[c];
+                        const isCenter = r === 2 && c === 2;
+                        const cell = document.createElement('div');
+                        const base = ['aspect-square', 'rounded-lg', 'flex', 'items-center', 'justify-center'];
+                        if (selected) {
+                            if (isCenter) base.push('bg-yellow-400', 'text-white');
+                            else base.push('bg-blue-500', 'text-white', 'shadow');
+                        } else {
+                            base.push('bg-white', 'border-2', 'border-gray-200');
+                        }
+                        cell.className = base.join(' ');
+                        cell.textContent = isCenter ? '★' : String(n);
+                        cell.dataset.r = String(r);
+                        cell.dataset.c = String(c);
+                        gridEl.appendChild(cell);
+                        n++;
+                    }
                 }
             }
-        }
 
-        function updateBoard(playerIdx){
-            const grid = document.querySelector(`[data-player="${playerIdx}"] .board-grid`);
-            if (grid) drawBoardCells(grid, boards[playerIdx]);
-        }
-
-        function highlightTurn(playerIdx){
-            document.querySelectorAll('#boards > div').forEach((panel, idx) => {
-                const badge = panel.querySelector('.turn-badge');
-                if (!gameOver && idx === playerIdx){
-                    panel.classList.add('ring-4','ring-blue-500','scale-105');
-                    badge?.classList.remove('hidden');
-                } else {
-                    panel.classList.remove('ring-4','ring-blue-500','scale-105');
-                    badge?.classList.add('hidden');
-                }
-            });
-        }
-
-        function disableAnswerButtons(){
-            Array.from(document.getElementsByClassName('qButtons')).forEach(btn => {
-                btn.disabled = true;
-                btn.classList.add('opacity-60','cursor-not-allowed');
-            });
-        }
-
-        function endGame(winnerIdx){
-            gameOver = true;
-            clearInterval(timerInterval);
-            disableAnswerButtons();
-            highlightTurn(-1);
-            showWinnerModal(playerNames[winnerIdx]);
-        }
-
-        function showWinnerModal(name){
-            const modal = document.getElementById('winnerModal');
-            const title = document.getElementById('winnerName');
-            if (title) title.textContent = name + ' je zmagal! 🏆';
-            modal?.classList.remove('hidden');
-        }
-
-        // --- Toast notifications ---
-        function showToast(message, type='info'){
-            const toast = document.getElementById('toast');
-            const text = document.getElementById('toastMessage');
-            if (!toast || !text) return;
-            text.textContent = message;
-            toast.classList.remove('hidden');
-            // style per type
-            toast.classList.remove('border-green-300','bg-green-50','border-rose-300','bg-rose-50');
-            if (type === 'success') {
-                toast.classList.add('border-green-300','bg-green-50');
-            } else if (type === 'error') {
-                toast.classList.add('border-rose-300','bg-rose-50');
+            function updateBoard(playerIdx) {
+                const grid = document.querySelector(`[data-player="${playerIdx}"] .board-grid`);
+                if (grid) drawBoardCells(grid, boards[playerIdx]);
+                // refresh selection UI for current player
+                if (playerIdx === currentPlayer) updateBoardSelectionUI(playerIdx);
             }
-            // auto-hide
-            if (toastTimer) clearTimeout(toastTimer);
-            toastTimer = setTimeout(() => {
-                toast.classList.add('hidden');
-            }, 1850);
-        }
-    </script>
 
-    <!-- Winner Modal -->
-    <div id="winnerModal" class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
-      <div class="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center space-y-4">
-        <h2 id="winnerName" class="text-2xl font-bold text-gray-800">Zmagovalec!</h2>
-        <p class="text-gray-600">Igra je končana. Čestitke!</p>
-        <div class="flex gap-3 justify-center">
-          <button onclick="window.location.href='index.html'" class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Nova igra</button>
-          <button onclick="document.getElementById('winnerModal').classList.add('hidden')" class="px-4 py-2 rounded-lg border hover:bg-gray-50">Zapri</button>
+            function assignTileForQuestion() {
+                currentAssigned = null;
+                currentSelectedTile = null;
+                if (!gameData[questionIndex]) return;
+                const axis = Math.random() < 0.5 ? 'row' : 'col';
+                const index = Math.floor(Math.random() * 5);
+                currentAssigned = { axis, index };
+                const board = boards[currentPlayer] || createEmptyBoard();
+                const candidates = [];
+                for (let i = 0; i < 5; i++) {
+                    const r = axis === 'row' ? index : i;
+                    const c = axis === 'col' ? index : i;
+                    if (!board[r][c]) candidates.push({ r, c });
+                }
+                if (candidates.length === 0) {
+                    for (let r = 0; r < 5; r++) for (let c = 0; c < 5; c++) if (!board[r][c]) candidates.push({ r, c });
+                }
+                if (candidates.length > 0) {
+                    const choice = candidates[Math.floor(Math.random() * candidates.length)];
+                    currentSelectedTile = choice;
+                }
+                updateBoardSelectionUI(currentPlayer);
+            }
+
+            function updateBoardSelectionUI(playerIdx) {
+                document.querySelectorAll('#boards .board-grid').forEach(grid => {
+                    grid.querySelectorAll('div').forEach(cell => {
+                        cell.classList.remove('allowed', 'chosen', 'ring-4', 'ring-blue-500', 'cursor-pointer', 'ring-2', 'ring-green-400');
+                    });
+                });
+
+                if (gameOver) return;
+                if (playerIdx !== currentPlayer) return;
+                const grid = document.querySelector(`[data-player="${playerIdx}"] .board-grid`);
+                if (!grid) return;
+                grid.querySelectorAll('div').forEach(cell => {
+                    const newNode = cell.cloneNode(true);
+                    cell.parentNode.replaceChild(newNode, cell);
+                });
+                const freshGrid = document.querySelector(`[data-player="${playerIdx}"] .board-grid`);
+                freshGrid.querySelectorAll('div').forEach(cell => {
+                    const r = parseInt(cell.dataset.r, 10);
+                    const c = parseInt(cell.dataset.c, 10);
+                    const occupied = !!boards[playerIdx]?.[r]?.[c];
+                    if (occupied) {
+                        cell.classList.add('opacity-60');
+                        return;
+                    }
+                    if (currentAssigned) {
+                        const { axis, index } = currentAssigned;
+                        const inAssigned = (axis === 'row' && r === index) || (axis === 'col' && c === index);
+                        if (inAssigned) {
+                            cell.classList.add('allowed', 'cursor-pointer', 'ring-2', 'ring-green-400');
+                            if (currentSelectedTile && currentSelectedTile.r === r && currentSelectedTile.c === c) {
+                                cell.classList.add('chosen', 'ring-4', 'ring-blue-500');
+                            } else {
+                                cell.classList.remove('chosen', 'ring-4', 'ring-blue-500');
+                            }
+                            cell.addEventListener('click', () => {
+                                currentSelectedTile = { r, c };
+                                updateBoardSelectionUI(playerIdx);
+                            });
+                        }
+                    }
+                });
+            }
+
+            function highlightTurn(playerIdx) {
+                document.querySelectorAll('#boards > div').forEach((panel, idx) => {
+                    const badge = panel.querySelector('.turn-badge');
+                    if (!gameOver && idx === playerIdx) {
+                        panel.classList.add('ring-4', 'ring-blue-500', 'scale-105');
+                        badge?.classList.remove('hidden');
+                    } else {
+                        panel.classList.remove('ring-4', 'ring-blue-500', 'scale-105');
+                        badge?.classList.add('hidden');
+                    }
+                });
+            }
+
+            function disableAnswerButtons() {
+                Array.from(document.getElementsByClassName('qButtons')).forEach(btn => {
+                    btn.disabled = true;
+                    btn.classList.add('opacity-60', 'cursor-not-allowed');
+                });
+            }
+
+            function enableAnswerButtons() {
+                Array.from(document.getElementsByClassName('qButtons')).forEach(btn => {
+                    btn.disabled = false;
+                    btn.classList.remove('opacity-60', 'cursor-not-allowed');
+                });
+            }
+
+            async function endGame(winnerIdx) {
+                gameOver = true;
+                clearInterval(timerInterval);
+                disableAnswerButtons();
+                highlightTurn(-1);
+                showWinnerModal(playerNames[winnerIdx]);
+                await window.api.endGame();
+            }
+
+            function showWinnerModal(name) {
+                const modal = document.getElementById('winnerModal');
+                const title = document.getElementById('winnerName');
+                if (title) title.textContent = name + ' je zmagal! 🏆';
+                modal?.classList.remove('hidden');
+            }
+
+            // --- Toast notifications ---
+            function showToast(message, type = 'info') {
+                const toast = document.getElementById('toast');
+                const text = document.getElementById('toastMessage');
+                if (!toast || !text) return;
+                text.textContent = message;
+                toast.classList.remove('hidden');
+                // style per type
+                toast.classList.remove('border-green-300', 'bg-green-50', 'border-rose-300', 'bg-rose-50');
+                if (type === 'success') {
+                    toast.classList.add('border-green-300', 'bg-green-50');
+                } else if (type === 'error') {
+                    toast.classList.add('border-rose-300', 'bg-rose-50');
+                }
+                // auto-hide
+                if (toastTimer) clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => {
+                    toast.classList.add('hidden');
+                }, 1850);
+            }
+        </script>
+
+        <!-- Winner Modal -->
+        <div id="winnerModal"
+            class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
+            <div class="bg-white rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center space-y-4">
+                <h2 id="winnerName" class="text-2xl font-bold text-gray-800">Zmagovalec!</h2>
+                <p class="text-gray-600">Igra je končana. Čestitke!</p>
+                <div class="flex gap-3 justify-center">
+                    <button onclick="window.location.href='index.html'"
+                        class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Nova igra</button>
+                    <button onclick="document.getElementById('winnerModal').classList.add('hidden')"
+                        class="px-4 py-2 rounded-lg border hover:bg-gray-50">Zapri</button>
+                </div>
+            </div>
         </div>
-      </div>
-    </div>
 
-    <!-- Toast -->
-    <div id="toast" class="hidden fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl border shadow-lg bg-white flex items-center gap-3">
-        <span id="toastMessage" class="text-sm text-gray-800">Message</span>
-        <button onclick="document.getElementById('toast').classList.add('hidden')" class="text-gray-400 hover:text-gray-600">✖</button>
-    </div>
-</main>
+        <!-- Toast -->
+        <div id="toast"
+            class="hidden fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl border shadow-lg bg-white flex items-center gap-3">
+            <span id="toastMessage" class="text-sm text-gray-800">Message</span>
+            <button onclick="document.getElementById('toast').classList.add('hidden')"
+                class="text-gray-400 hover:text-gray-600">✖</button>
+        </div>
+    </main>
 
 </body>
+
 </html>

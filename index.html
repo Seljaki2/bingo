@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -8,247 +9,247 @@
     <!-- Tailwind via CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
-<main class="w-full max-w-xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-6 space-y-6">
-    <header class="text-center space-y-2">
-        <h1 class="text-3xl font-bold text-gray-800">Bingo kviz🎯</h1>
-        <p class="text-gray-500">Pripravi igro in pritisni gumb za začetek kvingota!</p>
-    </header>
-        <button
-        type="button"
-        class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
-        onclick="window.location.href='leaderboard.html'"
-      >
-        🏆 Poglej lestvico
+
+<body
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
+    <main
+        class="w-full max-w-xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-6 space-y-6">
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl font-bold text-gray-800">Bingo kviz🎯</h1>
+            <p class="text-gray-500">Pripravi igro in pritisni gumb za začetek kvingota!</p>
+        </header>
+        <button type="button"
+            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
+            onclick="window.location.href='leaderboard.html'">
+            🏆 Poglej lestvico
         </button>
-    <!-- Grade Level (Dynamically loaded) -->
-    <section>
-        <label class="block text-sm font-semibold text-gray-700 mb-3">
-            Izberi težavnost
-        </label>
-        <!-- Container where cards will appear -->
-        <div id="grade-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
-            <!-- JS will populate cards here -->
-        </div>
-    </section>
-
-    <form class="space-y-6">
-        <!-- Player Names -->
-        <div>
-            <label class="block text-sm font-semibold text-gray-700 mb-2">Igralci</label>
-            <div id="players-list" class="space-y-2 text-sm text-gray-600">
-                <p>Ni še dodanih igralcev   .</p>
+        <button type="button"
+            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
+            onclick="window.location.href='add_question.html'">
+            ➕ Dodaj vprašanje
+        </button>
+        <!-- Grade Level (Dynamically loaded) -->
+        <section>
+            <label class="block text-sm font-semibold text-gray-700 mb-3">
+                Izberi težavnost
+            </label>
+            <!-- Container where cards will appear -->
+            <div id="grade-cards" class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                <!-- JS will populate cards here -->
             </div>
-            <button
-                    id="add-player-btn"
-                    type="button"
+        </section>
+
+        <form class="space-y-6">
+            <!-- Player Names -->
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Igralci</label>
+                <div id="players-list" class="space-y-2 text-sm text-gray-600">
+                    <p>Ni še dodanih igralcev .</p>
+                </div>
+                <button id="add-player-btn" type="button"
                     class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                    onclick="window.api.openAddPlayerWindow()"
-            >
-    Dodaj igralca
-</button>
-        </div>
+                    onclick="window.api.openAddPlayerWindow()">
+                    Dodaj igralca
+                </button>
+            </div>
 
-    <section>
-        <label class="block text-sm font-semibold text-gray-700 mb-3">
-            Izberi predmet (vsaj 1)
-        </label>
-        <div id="category-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        </div>
-    </section>
+            <section>
+                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                    Izberi predmet (vsaj 1)
+                </label>
+                <div id="category-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                </div>
+            </section>
 
 
-        <!-- Buttons -->
-        <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
-            <Button
-                    id="start-game"
-                    type="button"
-                    disabled = false
-                    class="px-6 py-3 bg-gray-300 text-white rounded-lg cursor-not-allowed transition-all"
-            >
-                Začni igro ▶️
-            </Button>
-        </div>
-    </form>
+            <!-- Buttons -->
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <Button id="start-game" type="button" disabled=false
+                    class="px-6 py-3 bg-gray-300 text-white rounded-lg cursor-not-allowed transition-all">
+                    Začni igro ▶️
+                </Button>
+            </div>
+        </form>
 
-    <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200">
-        <span class="font-semibold">Digitalna Brigada</span>
-    </footer>
-</main>
+        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200">
+            <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
+        </footer>
+    </main>
 
-<!-- Separate JS file for fetching and rendering -->
- <script src="index.js"></script>
-<script>
-    loadCategories();
-    loadGrades();
+    <!-- Separate JS file for fetching and rendering -->
+    <script src="index.js"></script>
+    <script>
+        loadCategories();
+        loadGrades();
 
-    let isGradeSeleced = false;
-    let categoriesSelected = 0;
-    const selected = { grade: null, category: [] };
-    const startBtn = document.getElementById("start-game");
-    let players = [];
+        let isGradeSeleced = false;
+        let categoriesSelected = 0;
+        const selected = { grade: null, category: [] };
+        const startBtn = document.getElementById("start-game");
+        let players = [];
 
-    function enableStartButton() {
-        let namesSelected = true;
-        if(players.length > 0){
-            namesSelected = true;
+        function enableStartButton() {
+            let namesSelected = true;
+            if (players.length > 0) {
+                namesSelected = true;
+            }
+            else {
+                namesSelected = false;
+            }
+            if (isGradeSeleced && categoriesSelected > 0 && namesSelected !== false) {
+                startBtn.disabled = false;
+                startBtn.classList.remove("bg-gray-300", "cursor-not-allowed");
+                startBtn.classList.add("bg-blue-600", "hover:bg-blue-700", "text-white", "cursor-pointer");
+            } else {
+                startBtn.classList.add("bg-gray-300", "cursor-not-allowed");
+                startBtn.classList.remove("bg-blue-600", "hover:bg-blue-700", "cursor-pointer");
+            }
         }
-        else{
-            namesSelected = false;
-        }
-        if (isGradeSeleced && categoriesSelected > 0 && namesSelected !== false) {
-            startBtn.disabled = false;
-            startBtn.classList.remove("bg-gray-300", "cursor-not-allowed");
-            startBtn.classList.add("bg-blue-600", "hover:bg-blue-700", "text-white", "cursor-pointer");
-        } else{
-            startBtn.classList.add("bg-gray-300", "cursor-not-allowed");
-            startBtn.classList.remove("bg-blue-600", "hover:bg-blue-700", "cursor-pointer");
-        }
-    }
 
-    async function loadCategories() {
-        const categories = (await window.api.loadMenu()).categories;
-        console.log(categories);
+        async function loadCategories() {
+            const categories = (await window.api.loadMenu()).categories;
+            console.log(categories);
 
-        const categoryContainer = document.getElementById("category-cards");
-        categoryContainer.innerHTML = "";
+            const categoryContainer = document.getElementById("category-cards");
+            categoryContainer.innerHTML = "";
 
-        categories.forEach(category => {
-            const card = document.createElement("div");
-            card.setAttribute("data-id", category.id);
-            card.className =
-                "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
-            card.innerHTML = `
+            categories.forEach(category => {
+                const card = document.createElement("div");
+                card.setAttribute("data-id", category.id);
+                card.className =
+                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
+                card.innerHTML = `
         <h3 class="font-semibold text-lg mb-1">${category.name}</h3>
         `;
 
-            card.addEventListener("click", () => {
-                selectedId = category.id;
-                if(card.classList.contains("border-green-500")){
-                    card.classList.remove("border-green-500", "bg-green-50", "shadow-md", "selected");
-                    card.classList.add("border-gray-200", "bg-white");
-                    categoriesSelected--;
-                    enableStartButton();
-                } else {
-                    card.classList.add("border-green-500", "bg-green-50", "shadow-md", "selected");
-                    categoriesSelected++;
-                    enableStartButton();
-                }
+                card.addEventListener("click", () => {
+                    selectedId = category.id;
+                    if (card.classList.contains("border-green-500")) {
+                        card.classList.remove("border-green-500", "bg-green-50", "shadow-md", "selected");
+                        card.classList.add("border-gray-200", "bg-white");
+                        categoriesSelected--;
+                        enableStartButton();
+                    } else {
+                        card.classList.add("border-green-500", "bg-green-50", "shadow-md", "selected");
+                        categoriesSelected++;
+                        enableStartButton();
+                    }
+                });
+
+                categoryContainer.appendChild(card);
             });
+        }
+        async function loadGrades() {
+            const grades = (await window.api.loadMenu()).ageGroups;
+            console.log(grades);
 
-            categoryContainer.appendChild(card);
-        });
-    }
-    async function loadGrades() {
-        const grades = (await window.api.loadMenu()).ageGroups;
-        console.log(grades);
+            const gradeContainer = document.getElementById("grade-cards");
+            gradeContainer.innerHTML = "";
 
-        const gradeContainer = document.getElementById("grade-cards");
-        gradeContainer.innerHTML = "";
-
-        grades.forEach(grade => {
-            const card = document.createElement("div");
-            card.setAttribute("data-id", grade.id);
-            card.className =
-                "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
-            card.innerHTML = `
+            grades.forEach(grade => {
+                const card = document.createElement("div");
+                card.setAttribute("data-id", grade.id);
+                card.className =
+                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
+                card.innerHTML = `
         <h3 class="font-semibold text-lg mb-1">${grade.age_group}</h3>
         <p class="text-sm text-gray-500">Leta ${grade.min_age} – ${grade.max_age}</p>
         `;
 
-            card.addEventListener("click", () => {
-            selectedId = grade.id;
+                card.addEventListener("click", () => {
+                    selectedId = grade.id;
 
-            document.querySelectorAll("#grade-cards > div").forEach(el => {
-                el.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-                el.classList.add("border-gray-200", "bg-white");
+                    document.querySelectorAll("#grade-cards > div").forEach(el => {
+                        el.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
+                        el.classList.add("border-gray-200", "bg-white");
+                    });
+
+                    card.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
+                    isGradeSeleced = true;
+                    enableStartButton();
+                });
+
+                gradeContainer.appendChild(card);
             });
 
-            card.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-            isGradeSeleced = true;
-            enableStartButton();
-        });
 
-            gradeContainer.appendChild(card);
-        });
-
-
-        startBtn.addEventListener("click", async () => {
-            if(startBtn.disabled) return;
-            document.querySelectorAll("#grade-cards > .selected").forEach(el => {
-                selected.grade = el.getAttribute("data-id");
+            startBtn.addEventListener("click", async () => {
+                if (startBtn.disabled) return;
+                document.querySelectorAll("#grade-cards > .selected").forEach(el => {
+                    selected.grade = el.getAttribute("data-id");
+                });
+                document.querySelectorAll("#category-cards > .selected").forEach(el => {
+                    selected.category.push(el.getAttribute("data-id"));
+                });
+                console.log("Selected Age Group ID:", selected.grade);
+                console.log("Selected Category IDs:", selected.category.join(", "));
+                const parameters = {
+                    grade: selected.grade,
+                    category: selected.category,
+                    players: players
+                };
+                localStorage.setItem('parameters', JSON.stringify(parameters));
+                window.location.href = "game.html";
             });
-            document.querySelectorAll("#category-cards > .selected").forEach(el => {
-                selected.category.push(el.getAttribute("data-id"));
-            });
-            console.log("Selected Age Group ID:", selected.grade);
-            console.log("Selected Category IDs:", selected.category.join(", "));
-            const parameters = {
-                grade: selected.grade,
-                category: selected.category,
-                players: players
-            };
-            localStorage.setItem('parameters', JSON.stringify(parameters));
-            window.location.href = "game.html";
-        });
-    }
-</script>
-<script>
-    const list = document.getElementById('players-list');
-    const addBtn = document.getElementById('add-player-btn');
-    const MAX_PLAYERS = 4;
-    const playerKeys = new Set(); // ids of chosen players
-
-    function updateAddPlayerButtonState() {
-        if (players.length >= MAX_PLAYERS) {
-            addBtn.disabled = true;
-            addBtn.classList.add('bg-gray-300','cursor-not-allowed','opacity-60');
-            addBtn.classList.remove('bg-blue-600','hover:bg-blue-700');
-        } else {
-            addBtn.disabled = false;
-            addBtn.classList.remove('bg-gray-300','cursor-not-allowed','opacity-60');
-            addBtn.classList.add('bg-blue-600','hover:bg-blue-700');
         }
-    }
+    </script>
+    <script>
+        const list = document.getElementById('players-list');
+        const addBtn = document.getElementById('add-player-btn');
+        const MAX_PLAYERS = 4;
+        const playerKeys = new Set(); // ids of chosen players
 
-    // call once on load
-    updateAddPlayerButtonState();
-
-    window.api.onPlayerAdded((player) => {
-        // build a unique key (prefer DB id; fallback to name combo)
-        const key = player?.id ?? `${player.first_name}::${player.last_name}`;
-
-        // prevent duplicates
-        if (playerKeys.has(String(key))) {
-            // briefly highlight existing row
-            const existing = [...list.children].find(el => el.dataset?.key === String(key));
-            if (existing) {
-                existing.classList.add('ring-2','ring-red-400');
-                setTimeout(() => existing.classList.remove('ring-2','ring-red-400'), 700);
+        function updateAddPlayerButtonState() {
+            if (players.length >= MAX_PLAYERS) {
+                addBtn.disabled = true;
+                addBtn.classList.add('bg-gray-300', 'cursor-not-allowed', 'opacity-60');
+                addBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            } else {
+                addBtn.disabled = false;
+                addBtn.classList.remove('bg-gray-300', 'cursor-not-allowed', 'opacity-60');
+                addBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
             }
-            return;
         }
 
-        // enforce max 4 players
-        if (players.length >= MAX_PLAYERS) {
-            updateAddPlayerButtonState();
-            return;
-        }
-
-        if (list.children[0]?.tagName === 'P') list.innerHTML = '';
-
-        const item = document.createElement('div');
-        item.dataset.key = String(key);
-        item.className = 'p-2 border rounded-lg bg-white added-player';
-        item.textContent = `${player.first_name} ${player.last_name}`;
-        list.appendChild(item);
-
-        players.push(player);
-        playerKeys.add(String(key));
-
-        enableStartButton();
+        // call once on load
         updateAddPlayerButtonState();
-    });
-</script>
+
+        window.api.onPlayerAdded((player) => {
+            // build a unique key (prefer DB id; fallback to name combo)
+            const key = player?.id ?? `${player.first_name}::${player.last_name}`;
+
+            // prevent duplicates
+            if (playerKeys.has(String(key))) {
+                // briefly highlight existing row
+                const existing = [...list.children].find(el => el.dataset?.key === String(key));
+                if (existing) {
+                    existing.classList.add('ring-2', 'ring-red-400');
+                    setTimeout(() => existing.classList.remove('ring-2', 'ring-red-400'), 700);
+                }
+                return;
+            }
+
+            // enforce max 4 players
+            if (players.length >= MAX_PLAYERS) {
+                updateAddPlayerButtonState();
+                return;
+            }
+
+            if (list.children[0]?.tagName === 'P') list.innerHTML = '';
+
+            const item = document.createElement('div');
+            item.dataset.key = String(key);
+            item.className = 'p-2 border rounded-lg bg-white added-player';
+            item.textContent = `${player.first_name} ${player.last_name}`;
+            list.appendChild(item);
+
+            players.push(player);
+            playerKeys.add(String(key));
+
+            enableStartButton();
+            updateAddPlayerButtonState();
+        });
+    </script>
 </body>
+
 </html>

@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Dodaj vprašanje</title>
+
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
+    <main
+        class="w-full max-w-xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-6 space-y-6">
+        <header class="text-center space-y-2">
+            <h1 class="text-3xl font-bold text-gray-800">Dodaj vprašanje</h1>
+            <p class="text-gray-500">Izpolni polja za novo vprašanje.</p>
+        </header>
+
+        <form id="question-form" class="space-y-6">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Težavnost</label>
+                <select id="age_group_id"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+                    <option value="">Izberi težavnost</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Predmet</label>
+                <select id="category_id"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+                    <option value="">Izberi predmet</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Besedilo vprašanja</label>
+                <textarea id="text" rows="3"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Vnesi besedilo vprašanja" required></textarea>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Odgovori (4 možnosti)</label>
+                <div class="space-y-2">
+                    <input type="text" id="answer0"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Odgovor 1" required>
+                    <input type="text" id="answer1"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Odgovor 2" required>
+                    <input type="text" id="answer2"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Odgovor 3">
+                    <input type="text" id="answer3"
+                        class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        placeholder="Odgovor 4">
+                </div>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Pravilen odgovor (indeks 0-3)</label>
+                <select id="correct_answer"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    required>
+                    <option value="">Izberi pravilen odgovor</option>
+                    <option value="0">0 (Odgovor 1)</option>
+                    <option value="1">1 (Odgovor 2)</option>
+                    <option value="2">2 (Odgovor 3)</option>
+                    <option value="3">3 (Odgovor 4)</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 mb-2">Slika (neobvezno)</label>
+                <input type="file" id="image_picker" accept="image/*"
+                    class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
+                <button type="submit" class="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition">
+                    Dodaj vprašanje
+                </button>
+                <button type="button" onclick="window.location.href='index.html'"
+                    class="px-6 py-3 border border-gray-300 hover:bg-gray-100 rounded-lg transition">
+                    Nazaj
+                </button>
+            </div>
+        </form>
+
+        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200">
+            <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
+        </footer>
+    </main>
+
+    <script>
+        async function loadData() {
+            const { ageGroups, categories } = await window.api.loadMenu();
+
+            const ageSelect = document.getElementById('age_group_id');
+            ageGroups.forEach(group => {
+                const option = document.createElement('option');
+                option.value = group.id;
+                option.textContent = group.age_group;
+                ageSelect.appendChild(option);
+            });
+
+            const catSelect = document.getElementById('category_id');
+            categories.forEach(cat => {
+                const option = document.createElement('option');
+                option.value = cat.id;
+                option.textContent = cat.name;
+                catSelect.appendChild(option);
+            });
+            // Ensure correct_answer options reflect available answers
+            updateCorrectOptions();
+        }
+
+        function updateCorrectOptions() {
+            const raw = [
+                document.getElementById('answer0').value,
+                document.getElementById('answer1').value,
+                document.getElementById('answer2').value,
+                document.getElementById('answer3').value
+            ];
+            const filtered = raw.map(a => (a || '').trim()).filter(a => a.length > 0);
+            const select = document.getElementById('correct_answer');
+            const previous = select.value;
+            // clear existing options
+            select.innerHTML = '';
+            if (filtered.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Izberi pravilen odgovor';
+                select.appendChild(opt);
+                select.disabled = true;
+                return;
+            }
+            // insert placeholder
+            const placeholder = document.createElement('option');
+            placeholder.value = '';
+            placeholder.textContent = 'Izberi pravilen odgovor';
+            select.appendChild(placeholder);
+            // add one option per filtered answer
+            for (let i = 0; i < filtered.length; i++) {
+                const opt = document.createElement('option');
+                opt.value = String(i);
+                // show short preview of answer text
+                opt.textContent = `${i} — ${filtered[i].length > 30 ? filtered[i].slice(0, 30) + '...' : filtered[i]}`;
+                select.appendChild(opt);
+            }
+            select.disabled = false;
+            // try to restore previous selection if still valid
+            if (previous && select.querySelector(`option[value="${previous}"]`)) {
+                select.value = previous;
+            } else {
+                // select first real option
+                select.selectedIndex = 1;
+            }
+        }
+
+        function readFileAsDataURL(file) {
+            return new Promise((resolve, reject) => {
+                if (!file) return resolve(null);
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+
+        function showToast(msg, type = 'success') {
+            let toast = document.getElementById('addToast');
+            if (!toast) {
+                toast = document.createElement('div');
+                toast.id = 'addToast';
+                toast.className = 'fixed bottom-6 right-6 z-50 px-4 py-3 rounded-xl border shadow-lg flex items-center gap-3';
+                document.body.appendChild(toast);
+            }
+            toast.textContent = msg;
+            toast.classList.remove('hidden');
+            toast.classList.toggle('bg-green-50', type === 'success');
+            toast.classList.toggle('border-green-300', type === 'success');
+            toast.classList.toggle('bg-rose-50', type === 'error');
+            toast.classList.toggle('border-rose-300', type === 'error');
+            setTimeout(() => toast.classList.add('hidden'), 2200);
+        }
+
+        document.getElementById('image_picker').addEventListener('change', (e) => {
+            const file = e.target.files && e.target.files[0];
+            if (!file) return;
+            // show a small preview
+            let preview = document.getElementById('imagePreview');
+            let img = document.getElementById('imagePreviewImg');
+            if (!preview) {
+                preview = document.createElement('p');
+                preview.id = 'imagePreview';
+                preview.className = 'text-sm text-gray-500 mt-2';
+                preview.textContent = 'Preview:';
+                e.target.parentNode.appendChild(preview);
+            }
+            if (!img) {
+                img = document.createElement('img');
+                img.id = 'imagePreviewImg';
+                img.className = 'mt-2 max-h-40 rounded';
+                e.target.parentNode.appendChild(img);
+            }
+            img.src = URL.createObjectURL(file);
+            img.classList.remove('hidden');
+        });
+
+        // Update correct_answer options whenever any answer input changes
+        ['answer0', 'answer1', 'answer2', 'answer3'].forEach(id => {
+            const el = document.getElementById(id);
+            el.addEventListener('input', updateCorrectOptions);
+        });
+
+        document.getElementById('question-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+
+            // Collect and trim answers, filter out empty ones
+            const rawAnswers = [
+                document.getElementById('answer0').value,
+                document.getElementById('answer1').value,
+                document.getElementById('answer2').value,
+                document.getElementById('answer3').value
+            ];
+            const answers = rawAnswers.map(a => (a || '').trim()).filter(a => a.length > 0);
+            if (answers.length < 2) {
+                showToast('Vnesi vsaj 2 odgovora.', 'error');
+                return;
+            }
+
+            const fileInput = document.getElementById('image_picker');
+            const file = fileInput.files && fileInput.files[0];
+            let dataUrl = null;
+            try {
+                dataUrl = await readFileAsDataURL(file);
+            } catch (err) {
+                console.error('file read error', err);
+                showToast('Napaka pri branju slike.', 'error');
+                return;
+            }
+
+            // validate correct_answer is within range of answers array
+            const selectedCorrect = parseInt(document.getElementById('correct_answer').value);
+            if (isNaN(selectedCorrect) || selectedCorrect < 0 || selectedCorrect >= answers.length) {
+                showToast('Izberi veljaven pravilen odgovor.', 'error');
+                return;
+            }
+
+            const question = {
+                age_group_id: parseInt(document.getElementById('age_group_id').value),
+                answers,
+                category_id: parseInt(document.getElementById('category_id').value),
+                correct_answer: selectedCorrect,
+                text: document.getElementById('text').value,
+                // pass the base64 data URL if present
+                image_data: dataUrl || null
+            };
+
+            try {
+                const result = await window.api.addQuestion(question);
+                if (result.success) {
+                    showToast('Vprašanje uspešno dodano!', 'success');
+                    // reset form fields
+                    document.getElementById('question-form').reset();
+                    const prevImg = document.getElementById('imagePreviewImg');
+                    if (prevImg) prevImg.classList.add('hidden');
+                    const prevText = document.getElementById('imagePreview');
+                    if (prevText) prevText.classList.add('hidden');
+                } else {
+                    showToast('Napaka: ' + result.error, 'error');
+                }
+            } catch (err) {
+                console.error(err);
+                showToast('Napaka pri dodajanju vprašanja.', 'error');
+            }
+        });
+
+        loadData();
+    </script>
+</body>
+
+</html>
