@@ -5,13 +5,18 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width,initial-scale=1" />
     <title>Dodaj težavnost</title>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body
-    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
-    <main class="w-full max-w-md bg-white/90 rounded-2xl p-6 shadow">
-        <h2 class="text-lg font-semibold mb-4">Dodaj novo težavnost</h2>
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-6 flex items-center justify-center font-sans">
+    <main class="w-full max-w-md bg-white/90 rounded-2xl p-6 shadow dark:bg-gray-800/80">
+        <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Dodaj novo težavnost</h2>
         <form id="gform" class="space-y-4">
             <div>
                 <label class="block text-sm font-medium">Ime težavnosti</label>
@@ -46,8 +51,26 @@
                 return;
             }
             window.close();
-        });
-    </script>
-</body>
+    });
+</script>
+<script>
+    (async () => {
+        const shouldUseDark = await window.api.getTheme();
+        const html = document.documentElement;
+        if (shouldUseDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    })();
 
-</html>
+    window.api.onThemeChanged((shouldUseDark) => {
+        const html = document.documentElement;
+        if (shouldUseDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    });
+</script>
+</body></html>

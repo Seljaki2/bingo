@@ -44,4 +44,8 @@ contextBridge.exposeInMainWorld('api', {
     // Adds a new question. `question` should include: text, answers (array), correct_answer (int),
     // category_id, age_group_id, and optionally image_path (local file path from renderer).
     addQuestion: (question) => ipcRenderer.invoke('addQuestion', question),
+
+    setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
+    getTheme: () => ipcRenderer.invoke('get-theme'),
+    onThemeChanged: (callback) => ipcRenderer.on('theme-changed', (_, shouldUseDark) => callback(shouldUseDark)),
 });

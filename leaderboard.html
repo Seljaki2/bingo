@@ -5,18 +5,23 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Bingo — Lestvica</title>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
 <body
-    class="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 p-8 flex items-center justify-center font-sans">
+    class="min-h-screen bg-gradient-to-br from-yellow-100 via-pink-100 to-blue-100 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-8 flex items-center justify-center font-sans">
     <main
-        class="max-w-3xl w-full bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-100 p-8 space-y-6">
+        class="max-w-3xl w-full bg-white/80 backdrop-blur-sm rounded-3xl shadow-2xl border border-gray-100 dark:bg-gray-800/80 dark:border-gray-700 p-8 space-y-6">
         <header class="text-center">
             <div class="flex items-center justify-center gap-3 mb-3">
-                🏆 <h1 class="text-3xl font-bold text-gray-800">Lestvica</h1> 🏆
+                🏆 <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Lestvica</h1> 🏆
             </div>
-            <p class="text-gray-500">Najboljši igralci po triadah in predmetih</p>
+            <p class="text-gray-500 dark:text-gray-300">Najboljši igralci po triadah in predmetih</p>
         </header>
 
         <!-- Triad Tabs -->
@@ -31,11 +36,11 @@
         <section id="leaderboard-container" class="space-y-3 mt-4 min-h-[200px]"></section>
 
         <button id="backButton"
-            class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg shadow">
+            class="w-full mt-6 py-3 bg-blue-600 hover:bg-blue-700 dark:bg-blue-700 dark:hover:bg-blue-800 text-white font-semibold rounded-lg shadow">
             Meni
         </button>
 
-        <footer class="text-center pt-4 text-sm text-gray-500 border-t border-gray-200">
+        <footer class="text-center pt-4 text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
         </footer>
     </main>
@@ -205,6 +210,26 @@
         // Initialize
         initFilters().then(() => {
             attachEvents();
+        });
+    </script>
+    <script>
+        (async () => {
+            const shouldUseDark = await window.api.getTheme();
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        })();
+
+        window.api.onThemeChanged((shouldUseDark) => {
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
         });
     </script>
 </body>

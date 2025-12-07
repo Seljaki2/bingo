@@ -1,5 +1,5 @@
 require('dotenv').config();
-const { app, BrowserWindow, ipcMain, Menu } = require('electron/main');
+const { app, BrowserWindow, ipcMain, Menu, nativeTheme } = require('electron/main');
 const path = require('node:path');
 
 const { createClient } = require("@supabase/supabase-js");
@@ -376,6 +376,27 @@ ipcMain.handle('login-player', async (_, creds) => {
         console.error('Error logging in player:', err.message || err);
         return { success: false, error: err.message || String(err) };
     }
+});
+
+ipcMain.handle('set-theme', async (event, theme) => {
+    nativeTheme.themeSource = theme;
+    const shouldUseDark = nativeTheme.shouldUseDarkColors;
+    [win, add_player_window, add_age_group_window, add_category_window].forEach(w => {
+        if (w && !w.isDestroyed()) {
+            w.webContents.send('theme-changed', shouldUseDark);
+        }
+    });
+});
+
+ipcMain.handle('get-theme', () => nativeTheme.shouldUseDarkColors);
+
+nativeTheme.on('updated', () => {
+    const shouldUseDark = nativeTheme.shouldUseDarkColors;
+    [win, add_player_window, add_age_group_window, add_category_window].forEach(w => {
+        if (w && !w.isDestroyed()) {
+            w.webContents.send('theme-changed', shouldUseDark);
+        }
+    });
 });
 
 let currentGame = null;

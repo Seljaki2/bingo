@@ -4,13 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Dodaj igralca</title>
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 flex items-center justify-center min-h-screen font-sans">
-<main class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-6 w-full max-w-sm space-y-5">
+<body class="bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 flex items-center justify-center min-h-screen font-sans">
+<main class="bg-white/80 backdrop-blur-md rounded-3xl shadow-lg p-6 w-full max-w-sm space-y-5 dark:bg-gray-800/80">
     <header class="text-center">
-        <h1 class="text-2xl font-bold text-gray-800">Dodaj igralca</h1>
-        <p class="text-gray-500 text-sm mt-1">Registrirajte se ali prijavite spodaj</p>
+        <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Dodaj igralca</h1>
+        <p class="text-gray-500 dark:text-gray-300 text-sm mt-1">Registrirajte se ali prijavite spodaj</p>
     </header>
 
     <!-- Tabs -->
@@ -39,7 +44,7 @@
         <button type="submit" class="w-full bg-blue-600 text-white py-2 rounded-lg hover:bg-blue-700 transition">Prijava</button>
     </form>
 
-    <p id="message" class="text-center text-sm text-gray-600"></p>
+    <p id="message" class="text-center text-sm text-gray-600 dark:text-gray-400"></p>
 </main>
 
 <script>
@@ -96,6 +101,26 @@
         msg.className = res.success
             ? 'text-center text-green-600 text-sm'
             : 'text-center text-red-600 text-sm';
+    });
+</script>
+<script>
+    (async () => {
+        const shouldUseDark = await window.api.getTheme();
+        const html = document.documentElement;
+        if (shouldUseDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
+    })();
+
+    window.api.onThemeChanged((shouldUseDark) => {
+        const html = document.documentElement;
+        if (shouldUseDark) {
+            html.classList.add('dark');
+        } else {
+            html.classList.remove('dark');
+        }
     });
 </script>
 </body>

@@ -7,30 +7,73 @@
     <title>Quiz Bingo — Main Menu</title>
 
     <!-- Tailwind via CDN -->
+    <script>
+        tailwind.config = {
+            darkMode: 'class'
+        }
+    </script>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        function toggleDarkMode() {
+            const isDark = document.documentElement.classList.contains('dark');
+            window.api.setTheme(isDark ? 'light' : 'dark');
+        }
+
+        window.addEventListener('DOMContentLoaded', async () => {
+            const shouldUseDark = await window.api.getTheme();
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            const toggle = document.getElementById('dark-mode-toggle');
+            if (toggle) {
+                toggle.textContent = shouldUseDark ? '☀️' : '🌙';
+            }
+        });
+
+        window.api.onThemeChanged((shouldUseDark) => {
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+            const toggle = document.getElementById('dark-mode-toggle');
+            if (toggle) {
+                toggle.textContent = shouldUseDark ? '☀️' : '🌙';
+            }
+        });
+    </script>
 </head>
 
 <body
-    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 p-6 flex items-center justify-center font-sans">
+    class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-6 flex items-center justify-center font-sans">
     <main
-        class="w-full max-w-xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 p-6 space-y-6">
+        class="w-full max-w-xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 dark:bg-gray-800/80 dark:border-gray-700 p-6 space-y-6">
         <header class="text-center space-y-2">
-            <h1 class="text-3xl font-bold text-gray-800">Bingo kviz🎯</h1>
-            <p class="text-gray-500">Pripravi igro in pritisni gumb za začetek kvingota!</p>
+            <div class="flex justify-center items-center space-x-4">
+                <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Bingo kviz🎯</h1>
+                <button id="dark-mode-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors" onclick="toggleDarkMode()">
+                    🌙
+                </button>
+            </div>
+            <p class="text-gray-500 dark:text-gray-300">Pripravi igro in pritisni gumb za začetek kvingota!</p>
         </header>
         <button type="button"
-            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
+            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200 dark:border-gray-600 dark:hover:bg-gray-700"
             onclick="window.location.href='leaderboard.html'">
             🏆 Poglej lestvico
         </button>
         <button type="button"
-            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200"
+            class="w-full px-6 py-3 border border-gray-300 hover:bg-gray-100 font-semibold rounded-lg transition-colors duration-200 dark:border-gray-600 dark:hover:bg-gray-700"
             onclick="window.location.href='add_question.html'">
             ➕ Dodaj vprašanje
         </button>
         <!-- Grade Level (Dynamically loaded) -->
         <section>
-            <label class="block text-sm font-semibold text-gray-700 mb-3">
+            <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                 Izberi težavnost
             </label>
             <!-- Container where cards will appear -->
@@ -42,19 +85,19 @@
         <form class="space-y-6">
             <!-- Player Names -->
             <div>
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Igralci</label>
-                <div id="players-list" class="space-y-2 text-sm text-gray-600">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Igralci</label>
+                <div id="players-list" class="space-y-2 text-sm text-gray-600 dark:text-gray-400">
                     <p>Ni še dodanih igralcev .</p>
                 </div>
                 <button id="add-player-btn" type="button"
-                    class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    class="mt-3 w-full px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition dark:bg-blue-700 dark:hover:bg-blue-800"
                     onclick="window.api.openAddPlayerWindow()">
                     Dodaj igralca
                 </button>
             </div>
 
             <section>
-                <label class="block text-sm font-semibold text-gray-700 mb-3">
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3">
                     Izberi predmet (vsaj 1)
                 </label>
                 <div id="category-cards" class="grid grid-cols-1 sm:grid-cols-2 gap-2">
@@ -65,13 +108,13 @@
             <!-- Buttons -->
             <div class="pt-4 flex flex-col sm:flex-row items-center justify-center gap-4">
                 <Button id="start-game" type="button" disabled=false
-                    class="px-6 py-3 bg-gray-300 text-white rounded-lg cursor-not-allowed transition-all">
+                    class="px-6 py-3 bg-gray-300 text-white rounded-lg cursor-not-allowed transition-all dark:bg-gray-600">
                     Začni igro ▶️
                 </Button>
             </div>
         </form>
 
-        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200">
+        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
         </footer>
     </main>
@@ -103,11 +146,11 @@
             }
             if (isGradeSeleced && categoriesSelected > 0 && namesSelected !== false) {
                 startBtn.disabled = false;
-                startBtn.classList.remove("bg-gray-300", "cursor-not-allowed");
-                startBtn.classList.add("bg-blue-600", "hover:bg-blue-700", "text-white", "cursor-pointer");
+                startBtn.classList.remove("bg-gray-300", "cursor-not-allowed", "dark:bg-gray-600");
+                startBtn.classList.add("bg-blue-600", "hover:bg-blue-700", "text-white", "cursor-pointer", "dark:bg-blue-700", "dark:hover:bg-blue-800");
             } else {
-                startBtn.classList.add("bg-gray-300", "cursor-not-allowed");
-                startBtn.classList.remove("bg-blue-600", "hover:bg-blue-700", "cursor-pointer");
+                startBtn.classList.add("bg-gray-300", "cursor-not-allowed", "dark:bg-gray-600");
+                startBtn.classList.remove("bg-blue-600", "hover:bg-blue-700", "cursor-pointer", "dark:bg-blue-700", "dark:hover:bg-blue-800");
             }
         }
 
@@ -122,20 +165,20 @@
                 const card = document.createElement("div");
                 card.setAttribute("data-id", category.id);
                 card.className =
-                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
+                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg dark:border-gray-600 dark:bg-gray-700";
                 card.innerHTML = `
-        <h3 class="font-semibold text-lg mb-1">${category.name}</h3>
+        <h3 class="font-semibold text-lg mb-1 text-gray-800 dark:text-white">${category.name}</h3>
         `;
 
                 card.addEventListener("click", () => {
                     selectedId = category.id;
                     if (card.classList.contains("border-green-500")) {
-                        card.classList.remove("border-green-500", "bg-green-50", "shadow-md", "selected");
-                        card.classList.add("border-gray-200", "bg-white");
+                        card.classList.remove("border-green-500", "bg-green-50", "shadow-md", "selected", "dark:border-green-400", "dark:bg-green-900");
+                        card.classList.add("border-gray-200", "bg-white", "dark:border-gray-600", "dark:bg-gray-700");
                         categoriesSelected--;
                         enableStartButton();
                     } else {
-                        card.classList.add("border-green-500", "bg-green-50", "shadow-md", "selected");
+                        card.classList.add("border-green-500", "bg-green-50", "shadow-md", "selected", "dark:border-green-400", "dark:bg-green-900");
                         categoriesSelected++;
                         enableStartButton();
                     }
@@ -157,7 +200,7 @@
                 categoryContainer.appendChild(card);
             });
             const plusCat = document.createElement('div');
-            plusCat.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500";
+            plusCat.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500 dark:bg-gray-700/60";
             plusCat.innerHTML = `<div class="text-2xl font-bold">＋</div>`;
             plusCat.addEventListener('click', () => window.api.openAddCategoryWindow());
             categoryContainer.appendChild(plusCat);
@@ -173,10 +216,10 @@
                 const card = document.createElement("div");
                 card.setAttribute("data-id", grade.id);
                 card.className =
-                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg";
+                    "w-half p-4 border-2 border-gray-200 rounded-xl cursor-pointer bg-white transition-all hover:scale-105 hover:shadow-lg dark:border-gray-600 dark:bg-gray-700";
                 card.innerHTML = `
-        <h3 class="font-semibold text-lg mb-1">${grade.age_group}</h3>
-        <p class="text-sm text-gray-500">Leta ${grade.min_age} – ${grade.max_age}</p>
+        <h3 class="font-semibold text-lg mb-1 text-gray-800 dark:text-white">${grade.age_group}</h3>
+        <p class="text-sm text-gray-500 dark:text-gray-300">Leta ${grade.min_age} – ${grade.max_age}</p>
         `;
 
                 card.addEventListener("click", () => {
@@ -184,7 +227,7 @@
 
                     document.querySelectorAll("#grade-cards > div").forEach(el => {
                         el.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-                        el.classList.add("border-gray-200", "bg-white");
+                        el.classList.add("border-gray-200", "bg-white", "dark:border-gray-600", "dark:bg-gray-700");
                     });
 
                     card.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
@@ -196,7 +239,7 @@
             });
 
             const plusGrade = document.createElement('div');
-            plusGrade.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500";
+            plusGrade.className = "w-half p-4 border-2 border-dashed rounded-xl cursor-pointer bg-white/60 flex items-center justify-center text-gray-500 dark:bg-gray-700/60";
             plusGrade.innerHTML = `<div class="text-2xl font-bold">＋</div>`;
             plusGrade.addEventListener('click', () => window.api.openAddAgeGroupWindow());
             gradeContainer.appendChild(plusGrade);
@@ -250,11 +293,11 @@
             if (players.length >= MAX_PLAYERS) {
                 addBtn.disabled = true;
                 addBtn.classList.add('bg-gray-300', 'cursor-not-allowed', 'opacity-60');
-                addBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+                addBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700', 'dark:bg-blue-700', 'dark:hover:bg-blue-800');
             } else {
                 addBtn.disabled = false;
                 addBtn.classList.remove('bg-gray-300', 'cursor-not-allowed', 'opacity-60');
-                addBtn.classList.add('bg-blue-600', 'hover:bg-blue-700');
+                addBtn.classList.add('bg-blue-600', 'hover:bg-blue-700', 'dark:bg-blue-700', 'dark:hover:bg-blue-800');
             }
         }
 
@@ -286,7 +329,7 @@
 
             const item = document.createElement('div');
             item.dataset.key = String(key);
-            item.className = 'p-2 border rounded-lg bg-white added-player';
+            item.className = 'p-2 border rounded-lg bg-white added-player dark:bg-gray-700 text-gray-800 dark:text-white';
             item.textContent = `${player.first_name} ${player.last_name}`;
             list.appendChild(item);
 
