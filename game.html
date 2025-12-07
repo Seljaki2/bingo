@@ -5,11 +5,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Quiz Bingo — Game</title>
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
         @keyframes clickAnimation {
@@ -124,24 +119,67 @@
             };
             async function enterData() {
                 console.log("Loading game data...");
-                parameters = JSON.parse(localStorage.getItem('parameters'));
+                try {
+                    parameters = JSON.parse(localStorage.getItem('parameters') || 'null');
+                } catch (e) {
+                    console.error('Failed to parse parameters', e);
+                    parameters = null;
+                }
+
+                if (!parameters || !Array.isArray(parameters.players) || parameters.players.length === 0) {
+                    alert('No players selected — please return to the menu and add players.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                if (!parameters.grade || !Array.isArray(parameters.category) || parameters.category.length === 0) {
+                    alert('Missing grade or categories — please configure the game from the menu.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
                 playerCount = parameters.players.length;
                 for (let i = 0; i < playerCount; i++) {
-                    playerIds.push(parseInt(parameters.players[i].id));
-                    playerNames.push(`${parameters.players[i].first_name} ${parameters.players[i].last_name}`);
+                    const p = parameters.players[i];
+                    const idNum = Number(p?.id);
+                    if (!Number.isFinite(idNum)) {
+                        alert('One or more selected players do not have a valid user id. Please login/register players.');
+                        window.location.href = 'index.html';
+                        return;
+                    }
+                    playerIds.push(idNum);
+                    playerNames.push(`${p.first_name} ${p.last_name}`);
                 }
+
                 console.log(parameters.players);
-                game = await window.api.startGame(parameters.grade, parameters.category, playerIds);
-                gameData = game.questions || [];
+
+                const res = await window.api.startGame(parameters.grade, parameters.category, playerIds);
+                if (!res || res.error) {
+                    console.error('startGame error', res?.error);
+                    alert('Failed to start game: ' + (res?.error || 'unknown'));
+                    window.location.href = 'index.html';
+                    return;
+                }
+
+                game = res;
+                gameData = Array.isArray(game.questions) ? game.questions : [];
+
+                if (!gameData.length) {
+                    alert('No questions returned for the selected grade/categories. Please add questions or choose different options.');
+                    window.location.href = 'index.html';
+                    return;
+                }
+
                 // initial boards from backend
-                boards = (game.players || []).map(p => p.board);
+                boards = (game.players || []).map(p => p.board || createEmptyBoard());
                 console.log(gameData);
-                await (shuffle(gameData));
+                await shuffle(gameData);
                 console.log("Zmesano: ", gameData);
                 limitIndex = gameData.length - 1;
                 renderBoards();
                 play();
                 startTimer();
+                return;
             }
             function play() {
                 if (gameOver) return;
