@@ -58,11 +58,21 @@
 
         function setBtnActive(btn, active) {
             if (active) {
-                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600');
-                btn.classList.remove('bg-white');
+                btn.classList.add('bg-blue-600', 'text-white', 'border-blue-600', 'dark:bg-blue-700');
+                btn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-white');
             } else {
-                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600');
-                btn.classList.add('bg-white');
+                btn.classList.remove('bg-blue-600', 'text-white', 'border-blue-600', 'dark:bg-blue-700');
+                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-white');
+            }
+        }
+
+        function setTriadActive(btn, active) {
+            if (active) {
+                btn.classList.add('bg-yellow-200', 'dark:bg-blue-700', 'text-gray-800', 'dark:text-white', 'border', 'border-blue-600');
+                btn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700');
+            } else {
+                btn.classList.remove('bg-yellow-200', 'dark:bg-blue-700', 'text-gray-800', 'dark:text-white', 'border', 'border-blue-600');
+                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700');
             }
         }
 
@@ -78,21 +88,21 @@
                 triadTabsContainer.innerHTML = '';
                 ageGroups.forEach((g, index) => {
                     const btn = document.createElement('button');
-                    btn.className = 'tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 hover:bg-yellow-100';
+                        btn.className = 'tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 dark:text-white bg-white dark:bg-gray-800 hover:bg-yellow-100 dark:hover:bg-blue-600';
                     btn.dataset.triad = g.age_group;
                     btn.textContent = g.age_group;
                     if (index === 0) {
-                        btn.classList.add('bg-yellow-200');
+                        setTriadActive(btn, true);
                         selectedTriad = g.age_group;
                     }
                     triadTabsContainer.appendChild(btn);
                 });
 
                 // Generate subject filters dynamically from categories
-                subjectFiltersContainer.innerHTML = '<span class="text-sm text-gray-500 mr-2">Predmeti:</span>';
+                subjectFiltersContainer.innerHTML = '<span class="text-sm text-gray-500 dark:text-gray-300 mr-2">Predmeti:</span>';
                 categories.forEach((c, index) => {
                     const btn = document.createElement('button');
-                    btn.className = 'cat-button px-3 py-1 rounded-lg border bg-white';
+                    btn.className = 'cat-button px-3 py-1 rounded-lg border bg-white dark:bg-gray-800 text-gray-700 dark:text-white';
                     btn.dataset.key = c.id.toString();
                     btn.textContent = c.name;
                     if (index === 0) {
@@ -117,7 +127,7 @@
             const gameIds = Object.keys(data);
 
             if (!gameIds.length) {
-                container.innerHTML = `<div class="p-6 text-center text-gray-500 bg-white/60 rounded-xl border">Ni rezultatov za izbran predmet.</div>`;
+                container.innerHTML = `<div class="p-6 text-center text-gray-500 dark:text-gray-300 bg-white/60 dark:bg-gray-700 rounded-xl border dark:border-gray-700">Ni rezultatov za izbran predmet.</div>`;
                 return;
             }
 
@@ -128,9 +138,9 @@
 
                 // Create section for this game
                 const section = document.createElement('div');
-                section.className = 'mb-6';
+                section.className = 'space-y-2';
                 section.innerHTML = `
-                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between bg-gray-100 p-3 rounded-lg hover:bg-gray-200" data-game="${gameId}">
+                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 dark:text-white flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600" data-game="${gameId}">
                         <span>Igra ${gameId.slice(0, 8)}...</span>
                         <span class="arrow">▼</span>
                     </button>
@@ -143,10 +153,10 @@
 
                     // place-specific styles: 1st = gold, 2nd = silver, 3rd = bronze
                     const placeStyle =
-                        i === 0 ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300' :
-                            i === 1 ? 'bg-gradient-to-r from-slate-50 to-gray-100 border-gray-300' :
-                                i === 2 ? 'bg-gradient-to-r from-amber-50 to-orange-100 border-amber-400' :
-                                    'bg-white border-gray-200';
+                        i === 0 ? 'bg-gradient-to-r from-yellow-50 to-amber-50 border-yellow-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gradient-to-r dark:from-blue-900 dark:to-blue-900 dark:border-blue-400 dark:text-white dark:focus:border-blue-400' :
+                            i === 1 ? 'bg-gradient-to-r from-slate-50 to-gray-100 border-gray-300 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gradient-to-r dark:from-blue-900 dark:to-blue-900 dark:border-blue-400 dark:text-white dark:focus:border-blue-400' :
+                                i === 2 ? 'bg-gradient-to-r from-amber-50 to-orange-100 border-amber-400 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gradient-to-r dark:from-blue-900 dark:to-blue-900 dark:border-blue-400 dark:text-white dark:focus:border-blue-400' :
+                                    'bg-white border-gray-200 focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gradient-to-r dark:from-blue-900 dark:to-blue-900 dark:border-blue-400 dark:text-white dark:focus:border-blue-400';
 
                     const div = document.createElement('div');
                     div.className = `flex items-center justify-between p-4 rounded-lg border-2 ${placeStyle}`;
@@ -170,8 +180,8 @@
             const triadButtons = document.querySelectorAll('.tab-button');
             triadButtons.forEach(btn => {
                 btn.addEventListener('click', () => {
-                    triadButtons.forEach(b => b.classList.remove('bg-yellow-200'));
-                    btn.classList.add('bg-yellow-200');
+                    triadButtons.forEach(b => setTriadActive(b, false));
+                    setTriadActive(btn, true);
                     selectedTriad = btn.dataset.triad;
                     renderGrouped();
                 });

@@ -12,25 +12,21 @@
     </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <style>
-        @keyframes clickAnimation {
-            0% {
-                background-color: white;
+        @keyframes wrongFlash {
+            0%, 100% {
+                background-color: #ef4444;
             }
-
-            25% {
-                background-color: red;
-            }
-
             50% {
-                background-color: yellow;
+                background-color: #dc2626;
             }
+        }
 
-            75% {
-                background-color: lightgreen;
+        @keyframes correctFlash {
+            0%, 100% {
+                background-color: #22c55e;
             }
-
-            100% {
-                background-color: lightblue;
+            50% {
+                background-color: #16a34a;
             }
         }
     </style>
@@ -42,7 +38,7 @@
         <div class="flex items-center justify-between">
             <h1 class="text-3xl font-bold text-center flex-1 text-gray-800 dark:text-white">Quiz Bingo! 🎯</h1>
             <button onclick="window.location.href='index.html'"
-                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors font-semibold">
+                class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors font-semibold dark:text-white">
                 Nova igra
             </button>
         </div>
@@ -61,12 +57,12 @@
                 <img src="" alt="Question Image" class="hidden" width="200px" height="150px" />
             </div>
             <!-- Question -->
-            <div class="bg-gradient-to-r from-purple-100 to-pink-100 dark:from-purple-900 dark:to-pink-900 p-6 rounded-lg text-center">
+            <div class="bg-gradient-to-r from-green-100 to-emerald-100 dark:from-green-900 dark:to-emerald-900 p-6 rounded-lg text-center dark:text-white">
                 <p id="question" class="text-lg font-medium"></p>
             </div>
 
             <!-- Answer buttons -->
-            <div id="answers" class="grid grid-cols-2 gap-4"></div>
+            <div id="answers" class="grid grid-cols-2 gap-4 "></div>
         </section>
 
         <!-- Bingo Boards (dynamic) -->
@@ -112,7 +108,7 @@
                     const btn = document.createElement('button');
                     btn.type = 'button';
                     btn.id = String(i);
-                    btn.className = 'qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2';
+                    btn.className = 'qButtons py-4 border rounded-lg hover:scale-105 transition-transform flex items-center justify-center gap-2 dark:text-white';
                     btn.innerText = options[i] ?? '';
                     btn.addEventListener('click', selectedAnswer, false);
                     container.appendChild(btn);
@@ -173,11 +169,11 @@
 
             async function selectedAnswer(event) {
                 const button = event.target;
-                button.classList.add("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-                button.style.animation = "clickAnimation 1.5s linear 0s infinite alternate";
                 if (gameOver) return;
                 const pIdx = currentPlayer;
                 console.log(pIdx, gameData[questionIndex].id, parseInt(button.id))
+                // visually mark selection (no background/inline animation to avoid flicker)
+                button.classList.add("border-blue-500", "shadow-md", "selected");
                 try {
                     disableAnswerButtons();
                     const result = await window.api.answer(pIdx, gameData[questionIndex].id, parseInt(button.id), currentSelectedTile);
@@ -186,11 +182,11 @@
                         boards[pIdx] = result.board;
                         updateBoard(pIdx);
                     }
-                    // Show feedback toast
+                    // Apply visual feedback: flash red for wrong, green for correct
                     if (isCorrectAnswer) {
-                        showToast(`✅ Pravilen odgovor, ${playerNames[pIdx]}!`, 'success');
+                        button.style.animation = "correctFlash 0.6s ease-in-out 2";
                     } else {
-                        showToast(`❌ Napačen odgovor, ${playerNames[pIdx]}! Poskusi ponovno.`, 'error');
+                        button.style.animation = "wrongFlash 0.6s ease-in-out 2";
                     }
                     if (result?.bingo) {
                         await endGame(pIdx);
@@ -198,14 +194,14 @@
                 } catch (e) {
                     console.error('answer error', e);
                     isCorrectAnswer = false;
-                    showToast('⚠️ Prišlo je do napake pri oddaji odgovora.', 'error');
                 }
                 setTimeout(function () {
                     if (!gameOver) play();
                     console.log(isCorrectAnswer);
-                    button.classList.remove("border-blue-500", "bg-blue-50", "shadow-md", "selected");
-                    button.classList.add("border-gray-200", "bg-white");
+                    // remove selection classes and any inline animation/color
+                    button.classList.remove("border-blue-500", "shadow-md", "selected");
                     button.style.animation = "";
+                    button.style.color = '';
                     enableAnswerButtons();
                 }, 1000);
             }
@@ -428,7 +424,7 @@
             function showWinnerModal(name) {
                 const modal = document.getElementById('winnerModal');
                 const title = document.getElementById('winnerName');
-                if (title) title.textContent = name + ' je zmagal! 🏆';
+                if (title) title.textContent = name + ' je zmagal/a! 🏆';
                 modal?.classList.remove('hidden');
             }
 
@@ -452,19 +448,31 @@
                     toast.classList.add('hidden');
                 }, 1850);
             }
+
+            function disableAllInteraction() {
+                // Disable all answer buttons
+                disableAnswerButtons();
+                // Disable all board panels and cells
+                document.querySelectorAll('#boards > div').forEach(panel => {
+                    panel.style.pointerEvents = 'none';
+                    panel.style.opacity = '0.6';
+                });
+                // Disable timer
+                if (timerInterval) clearInterval(timerInterval);
+            }
         </script>
 
         <!-- Winner Modal -->
         <div id="winnerModal"
             class="hidden fixed inset-0 bg-black/40 backdrop-blur-sm flex items-center justify-center z-50">
             <div class="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 w-[90%] max-w-md text-center space-y-4">
-                <h2 id="winnerName" class="text-2xl font-bold text-gray-800">Zmagovalec!</h2>
-                <p class="text-gray-600">Igra je končana. Čestitke!</p>
+                <h2 id="winnerName" class="text-2xl font-bold text-gray-800 dark:text-white">Zmagovalec!</h2>
+                <p class="text-gray-600 dark:text-gray-300">Igra je končana. Čestitke!</p>
                 <div class="flex gap-3 justify-center">
                     <button onclick="window.location.href='index.html'"
                         class="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Nova igra</button>
-                    <button onclick="document.getElementById('winnerModal').classList.add('hidden')"
-                        class="px-4 py-2 rounded-lg border hover:bg-gray-50">Zapri</button>
+                    <button onclick="document.getElementById('winnerModal').classList.add('hidden'); disableAllInteraction();"
+                        class="px-4 py-2 rounded-lg border hover:bg-gray-50 dark:border-gray-600 dark:hover:bg-gray-700 dark:text-white">Zapri</button>
                 </div>
             </div>
         </div>
