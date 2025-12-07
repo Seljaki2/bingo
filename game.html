@@ -41,7 +41,7 @@
         <section class="bg-white dark:bg-gray-800 shadow-2xl rounded-2xl p-6 space-y-6">
             <div class="flex items-center justify-between">
                 <span id="turn" class="px-3 py-1 rounded-full bg-blue-500 text-white font-medium"></span>
-                <span class="px-3 py-1 rounded-full bg-gray-200 font-medium">⏱️ 15s</span>
+                <span class="px-3 py-1 rounded-full bg-gray-200 font-medium">⏱️ 30s</span>
             </div>
 
             <!-- Progress bar -->
@@ -88,7 +88,7 @@
 
 
             let timerInterval;
-            let timeRemaining = 15;  // Timer starts at 15 seconds
+            //let timeRemaining = 30;  // Timer starts at 15 seconds
             const progressBar = document.querySelector('.timerBar');
             const timerDisplay = document.querySelector('.px-3.py-1.bg-gray-200');
 
@@ -259,7 +259,7 @@
                     clearInterval(timerInterval);
                 }
                 if (gameOver) return;
-                timeRemaining = 15;
+                timeRemaining = 30;
                 updateTimerDisplay(timeRemaining);
                 updateProgressBar(timeRemaining);
                 // 1x na sekundo
@@ -280,17 +280,17 @@
             }
 
             function updateProgressBar(time) {
-                if (time <= 10 && time > 5) {
+                if (time <= 15 && time > 10) {
                     progressBar.classList.add("bg-orange-500");
                     progressBar.classList.remove("bg-blue-500");
-                } else if (time <= 5) {
+                } else if (time <= 10) {
                     progressBar.classList.add("bg-rose-500");
                     progressBar.classList.remove("bg-orange-500");
                 } else {
                     progressBar.classList.add("bg-blue-500");
                     progressBar.classList.remove("bg-rose-500");
                 }
-                const percentage = (time / 15) * 100;
+                const percentage = (time / 30) * 100;
                 progressBar.style.width = `${percentage}%`;
             }
 
