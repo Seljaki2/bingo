@@ -690,21 +690,23 @@ ipcMain.handle('endGame', async () => {
         if (!currentGame) throw new Error('No game in progress');
         const results = [];
         for (const player of currentGame.players) {
-            const { data, error } = await supabase
-                .from('Leaderboard')
-                .insert({
-                    user_id: player.user_id,
-                    age_group_id: currentGame.ageGroup,
-                    category_id: currentGame.categories[0],
-                    score: player.score,
-                    correct_num: player.correctNum,
-                    false_num: player.falseNum,
-                    game_id: currentGame.uuid
-                })
-                .select()
-                .single();
-            if (error) throw error;
-            results.push(data);
+            for (const catId of currentGame.categories) {
+                const { data, error } = await supabase
+                    .from('Leaderboard')
+                    .insert({
+                        user_id: player.user_id,
+                        age_group_id: currentGame.ageGroup,
+                        category_id: catId,
+                        score: player.score,
+                        correct_num: player.correctNum,
+                        false_num: player.falseNum,
+                        game_id: currentGame.uuid
+                    })
+                    .select()
+                    .single();
+                if (error) throw error;
+                results.push(data);
+            }
         }
 
         currentGame = null;
