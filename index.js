@@ -2,6 +2,9 @@ require('dotenv').config();
 const { app, BrowserWindow, ipcMain, Menu, nativeTheme } = require('electron/main');
 const path = require('node:path');
 
+// dev mode if env contains DEV=true or dev=true
+const isDev = (process.env.DEV === 'true' || process.env.dev === 'true');
+
 const { createClient } = require("@supabase/supabase-js");
 const { randomUUID, randomBytes, scryptSync, timingSafeEqual } = require('node:crypto');
 const supabase = createClient(process.env.SUPABASE_URL, process.env.SUPABASE_ANON_KEY);
@@ -169,14 +172,19 @@ const createWindow = () => {
         }
     });
     win.loadFile('index.html');
-    // Remove the default application menu for a cleaner window (no tool menu)
+    // Application menu / devtools behavior depends on dev mode
     try {
-        // Removes menu from this window
-        win.removeMenu();
-        // Ensure the application menu is unset (cross-platform)
-        Menu.setApplicationMenu(null);
+        if (!isDev) {
+            // Removes menu from this window for production
+            win.removeMenu();
+            Menu.setApplicationMenu(null);
+        } else {
+            // In dev mode, open DevTools detached and keep the application menu
+            win.webContents.openDevTools({ mode: 'detach' });
+            console.log('Dev mode: opened DevTools for main window');
+        }
     } catch (e) {
-        console.warn('Could not remove menu:', e?.message || e);
+        console.warn('Could not set menu/devtools state:', e?.message || e);
     }
 }
 
@@ -195,6 +203,9 @@ function createAddPlayerWindow() {
     });
 
     add_player_window.loadFile('add_player.html');
+    if (isDev) {
+        try { add_player_window.webContents.openDevTools({ mode: 'detach' }); } catch (e) { }
+    }
 
     add_player_window.on('closed', () => {
         add_player_window = null;
@@ -213,6 +224,9 @@ function createAddAgeGroupWindow() {
         webPreferences: { preload: path.join(__dirname, 'preload.js') }
     });
     add_age_group_window.loadFile('add_age_group.html');
+    if (isDev) {
+        try { add_age_group_window.webContents.openDevTools({ mode: 'detach' }); } catch (e) { }
+    }
     add_age_group_window.on('closed', () => { add_age_group_window = null; });
 }
 
@@ -228,6 +242,9 @@ function createAddCategoryWindow() {
         webPreferences: { preload: path.join(__dirname, 'preload.js') }
     });
     add_category_window.loadFile('add_category.html');
+    if (isDev) {
+        try { add_category_window.webContents.openDevTools({ mode: 'detach' }); } catch (e) { }
+    }
     add_category_window.on('closed', () => { add_category_window = null; });
 }
 

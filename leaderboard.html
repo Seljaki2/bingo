@@ -5,11 +5,6 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Quiz Bingo — Lestvica</title>
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 
@@ -124,7 +119,22 @@
             container.innerHTML = '';
             const grouped = leaderboardData.grouped || {};
             const data = grouped[selectedTriad]?.[selectedCatId] || {};
-            const gameIds = Object.keys(data);
+            let gameIds = Object.keys(data);
+            console.log(data)
+
+            // Sort game sections by the creation date (use first entry's created_at)
+            gameIds.sort((a, b) => {
+                const aEntries = data[a] || [];
+                const bEntries = data[b] || [];
+                const aCreated = aEntries[0] && aEntries[0].created_at ? new Date(aEntries[0].created_at) : null;
+                const bCreated = bEntries[0] && bEntries[0].created_at ? new Date(bEntries[0].created_at) : null;
+
+                // Newest first
+                if (aCreated && bCreated) return bCreated - aCreated;
+                if (aCreated) return -1;
+                if (bCreated) return 1;
+                return a.localeCompare(b);
+            });
 
             if (!gameIds.length) {
                 container.innerHTML = `<div class="p-6 text-center text-gray-500 dark:text-gray-300 bg-white/60 dark:bg-gray-700 rounded-xl border dark:border-gray-700">Ni rezultatov za izbran predmet.</div>`;
@@ -136,12 +146,18 @@
                 // Sort entries by score descending
                 entries.sort((a, b) => b.score - a.score);
 
-                // Create section for this game
+                // Create section for this game (use readable date/title instead of raw id)
                 const section = document.createElement('div');
-                section.className = 'space-y-2';
+                // rely on the container's `space-y-3` for spacing between sections
+                section.className = 'mb-0';
+
+                // Try to extract a creation date from the first entry and format it for display
+                const createdAt = entries[0] && entries[0].created_at;
+                const displayDate = createdAt ? new Date(createdAt).toLocaleString() : gameId.slice(0, 8);
+
                 section.innerHTML = `
-                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 dark:text-white flex items-center justify-between bg-gray-100 dark:bg-gray-700 p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600" data-game="${gameId}">
-                        <span>Igra ${gameId.slice(0, 8)}...</span>
+                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between bg-gray-100 p-3 rounded-lg hover:bg-gray-200" data-game="${gameId}">
+                        <span>Igra — ${displayDate}</span>
                         <span class="arrow">▼</span>
                     </button>
                     <div class="game-list space-y-2" style="display: none;"></div>
@@ -171,6 +187,22 @@
                 });
 
                 container.appendChild(section);
+            });
+
+            // Attach toggle listeners for newly rendered game sections
+            const newGameToggles = container.querySelectorAll('.game-toggle');
+            newGameToggles.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const list = btn.nextElementSibling;
+                    const arrow = btn.querySelector('.arrow');
+                    if (list.style.display === 'none') {
+                        list.style.display = 'block';
+                        arrow.textContent = '▲';
+                    } else {
+                        list.style.display = 'none';
+                        arrow.textContent = '▼';
+                    }
+                });
             });
         }
 

@@ -7,11 +7,6 @@
     <title>Quiz Bingo — Main Menu</title>
 
     <!-- Tailwind via CDN -->
-    <script>
-        tailwind.config = {
-            darkMode: 'class'
-        }
-    </script>
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         function toggleDarkMode() {
@@ -149,6 +144,8 @@
                 startBtn.classList.remove("bg-gray-300", "cursor-not-allowed", "dark:bg-gray-600");
                 startBtn.classList.add("bg-blue-600", "hover:bg-blue-700", "text-white", "cursor-pointer", "dark:bg-blue-700", "dark:hover:bg-blue-800");
             } else {
+                // ensure the button is actually disabled (prevents starting with no players)
+                startBtn.disabled = true;
                 startBtn.classList.add("bg-gray-300", "cursor-not-allowed", "dark:bg-gray-600");
                 startBtn.classList.remove("bg-blue-600", "hover:bg-blue-700", "cursor-pointer", "dark:bg-blue-700", "dark:hover:bg-blue-800");
             }
@@ -301,7 +298,76 @@
             }
         }
 
-        // call once on load
+        function saveLoggedInPlayers() {
+            try {
+                const toSave = players.map(p => ({ id: p.id, first_name: p.first_name, last_name: p.last_name }));
+                localStorage.setItem('loggedInPlayers', JSON.stringify(toSave));
+            } catch (e) {
+                console.warn('Failed to save logged in players', e);
+            }
+        }
+
+        function createPlayerElement(player) {
+            const key = player?.id ?? `${player.first_name}::${player.last_name}`;
+            const item = document.createElement('div');
+            item.dataset.key = String(key);
+            item.className = 'p-2 border rounded-lg bg-white added-player dark:bg-gray-700 text-gray-800 dark:text-white flex items-center justify-between gap-2';
+
+            const name = document.createElement('div');
+            name.textContent = `${player.first_name} ${player.last_name}`;
+
+            const controls = document.createElement('div');
+            controls.className = 'flex items-center gap-2';
+
+            const removeBtn = document.createElement('button');
+            removeBtn.className = 'text-sm text-rose-600 hover:text-rose-800 px-2 py-1 rounded';
+            removeBtn.title = 'Odstrani igralca';
+            removeBtn.textContent = '✖';
+            removeBtn.addEventListener('click', () => {
+                // remove from players array
+                const k = String(key);
+                // remove first matching by key
+                const idx = players.findIndex(p => (p?.id ?? `${p.first_name}::${p.last_name}`) == k);
+                if (idx !== -1) players.splice(idx, 1);
+                playerKeys.delete(k);
+                if (item.parentNode) item.parentNode.removeChild(item);
+                saveLoggedInPlayers();
+                enableStartButton();
+                updateAddPlayerButtonState();
+                if (list.children.length === 0) {
+                    list.innerHTML = '<p>Ni še dodanih igralcev .</p>';
+                }
+            });
+
+            controls.appendChild(removeBtn);
+            item.appendChild(name);
+            item.appendChild(controls);
+            return item;
+        }
+
+        // load persisted players on startup
+        (function loadSavedPlayers() {
+            try {
+                const saved = JSON.parse(localStorage.getItem('loggedInPlayers') || '[]');
+                if (Array.isArray(saved) && saved.length > 0) {
+                    list.innerHTML = '';
+                    saved.forEach(sp => {
+                        const key = sp?.id ?? `${sp.first_name}::${sp.last_name}`;
+                        if (playerKeys.has(String(key))) return;
+                        players.push(sp);
+                        playerKeys.add(String(key));
+                        const el = createPlayerElement(sp);
+                        list.appendChild(el);
+                    });
+                }
+            } catch (e) {
+                console.warn('Failed to load saved players', e);
+            }
+            updateAddPlayerButtonState();
+            enableStartButton();
+        })();
+
+        // call once on load (in case no saved players)
         updateAddPlayerButtonState();
 
         window.api.onPlayerAdded((player) => {
@@ -319,7 +385,7 @@
                 return;
             }
 
-            // enforce max 4 players
+            // enforce max players
             if (players.length >= MAX_PLAYERS) {
                 updateAddPlayerButtonState();
                 return;
@@ -327,14 +393,15 @@
 
             if (list.children[0]?.tagName === 'P') list.innerHTML = '';
 
-            const item = document.createElement('div');
-            item.dataset.key = String(key);
-            item.className = 'p-2 border rounded-lg bg-white added-player dark:bg-gray-700 text-gray-800 dark:text-white';
-            item.textContent = `${player.first_name} ${player.last_name}`;
+            // ensure stored player object contains minimal fields
+            const toStore = { id: player.id, first_name: player.first_name, last_name: player.last_name };
+            players.push(toStore);
+            playerKeys.add(String(key));
+
+            const item = createPlayerElement(toStore);
             list.appendChild(item);
 
-            players.push(player);
-            playerKeys.add(String(key));
+            saveLoggedInPlayers();
 
             enableStartButton();
             updateAddPlayerButtonState();
