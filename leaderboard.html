@@ -67,7 +67,8 @@
                 btn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700');
             } else {
                 btn.classList.remove('bg-yellow-200', 'dark:bg-blue-700', 'text-gray-800', 'dark:text-white', 'border', 'border-blue-600');
-                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700');
+                // Ensure unselected buttons show white text in dark mode
+                btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-white');
             }
         }
 
@@ -156,8 +157,8 @@
                 const displayDate = createdAt ? new Date(createdAt).toLocaleString() : gameId.slice(0, 8);
 
                 section.innerHTML = `
-                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between bg-gray-100 p-3 rounded-lg hover:bg-gray-200" data-game="${gameId}">
-                        <span>Igra — ${displayDate}</span>
+                    <button class="game-toggle w-full text-left text-lg font-semibold text-gray-800 mb-3 flex items-center justify-between bg-gray-100 p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 dark:bg-gray-700 dark:text-white" data-game="${gameId}">
+                        <span>Igra - ${displayDate}</span>
                         <span class="arrow">▼</span>
                     </button>
                     <div class="game-list space-y-2" style="display: none;"></div>
