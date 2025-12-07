@@ -184,7 +184,7 @@
                 card.addEventListener('contextmenu', async (ev) => {
                     ev.preventDefault();
                     ev.stopPropagation();
-                    const ok = confirm(`Delete category "${category.name}"?`);
+                    const ok = confirm(`Želite izbrisati kategorijo "${category.name}"?`);
                     if (!ok) return;
                     const res = await window.api.deleteCategory(category.id);
                     if (!res || !res.success) {
@@ -248,7 +248,7 @@
                     ev.preventDefault();
                     ev.stopPropagation();
                     const name = el.querySelector('h3')?.innerText || 'this age group';
-                    const ok = confirm(`Delete age group "${name}"?`);
+                    const ok = confirm(`Želite izbrisati starostno skupino "${name}"?`);
                     if (!ok) return;
                     const res = await window.api.deleteAgeGroup(parseInt(id, 10));
                     if (!res || !res.success) {
