@@ -750,3 +750,78 @@ ipcMain.handle('addQuestion', async (event, question) => {
         return { success: false, error: err.message };
     }
 });
+
+// List questions with optional filters: { age_group_id, category_id (single or array) }
+ipcMain.handle('list-questions', async (event, filters = {}) => {
+    try {
+        let query = supabase.from('Questions').select('id, text, answers, image_path, category_id, age_group_id, correct_answer');
+
+        if (filters) {
+            if (Array.isArray(filters.category_id) && filters.category_id.length > 0) {
+                query = query.in('category_id', filters.category_id);
+            } else if (filters.category_id) {
+                query = query.eq('category_id', filters.category_id);
+            }
+            if (filters.age_group_id) {
+                query = query.eq('age_group_id', filters.age_group_id);
+            }
+        }
+
+        const { data, error } = await query.order('id', { ascending: true });
+        if (error) return { error: error.message };
+        return { data };
+    } catch (err) {
+        return { error: err.message };
+    }
+});
+
+// Delete a question by id. Also attempts to remove local image file if present and points to images/ folder.
+ipcMain.handle('delete-question', async (event, id) => {
+    try {
+        if (!id) return { success: false, error: 'No id provided' };
+        // First fetch the row to see image_path
+        const { data: existing, error: fetchErr } = await supabase.from('Questions').select('id, image_path').eq('id', id).maybeSingle();
+        if (fetchErr) return { success: false, error: fetchErr.message };
+
+        const { error } = await supabase.from('Questions').delete().eq('id', id);
+        if (error) return { success: false, error: error.message };
+
+        try {
+            if (existing && existing.image_path && typeof existing.image_path === 'string') {
+                const imgPath = existing.image_path;
+                // only remove files inside our images directory to avoid accidental deletes
+                const imagesDir = path.join(__dirname, 'images');
+                const resolved = path.resolve(imgPath);
+                if (resolved.startsWith(path.resolve(imagesDir))) {
+                    if (fs.existsSync(resolved)) {
+                        fs.unlinkSync(resolved);
+                    }
+                }
+            }
+        } catch (e) {
+            console.warn('Failed to remove question image file:', e?.message || e);
+        }
+
+        return { success: true };
+    } catch (err) {
+        console.error('delete-question error:', err?.message || err);
+        return { success: false, error: err.message || String(err) };
+    }
+});
+
+// Update a question. Expects object with `id` and other updatable fields (text, answers, correct_answer, category_id, age_group_id, image_path)
+ipcMain.handle('update-question', async (event, question) => {
+    try {
+        if (!question || !question.id) return { success: false, error: 'Invalid question payload' };
+        const id = question.id;
+        const toUpdate = { ...question };
+        delete toUpdate.id;
+
+        const { data, error } = await supabase.from('Questions').update(toUpdate).eq('id', id).select().maybeSingle();
+        if (error) return { success: false, error: error.message };
+        return { success: true, data };
+    } catch (err) {
+        console.error('update-question error:', err?.message || err);
+        return { success: false, error: err.message || String(err) };
+    }
+});

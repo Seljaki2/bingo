@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Uredi vprašanja</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        /* small modal backdrop */
+        .modal-backdrop { background: rgba(0,0,0,0.5); }
+    </style>
+</head>
+
+<body class="min-h-screen bg-gradient-to-br from-blue-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-6 flex items-center justify-center font-sans">
+    <main class="w-full max-w-4xl bg-white/80 backdrop-blur-sm rounded-3xl shadow-lg border border-gray-100 dark:bg-gray-800/80 dark:border-gray-700 p-6 space-y-6">
+        <header class="flex items-center justify-between">
+            <div class="flex justify-center items-center space-x-4">
+                <h1 class="text-2xl font-bold text-gray-800 dark:text-white">Uredi / izbriši vprašanja</h1>
+            </div>
+            <div class="flex gap-2">
+                <button onclick="window.location.href='index.html'" class="px-4 py-2 border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 rounded-lg transition">
+                    Nazaj
+                </button>
+            </div>
+        </header>
+
+        <section class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Težavnost</label>
+                <select id="filter-age" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400">
+                    <option value="">Vse</option>
+                </select>
+            </div>
+            <div>
+                <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Predmet</label>
+                <select id="filter-cat" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400">
+                    <option value="">Vse</option>
+                </select>
+            </div>
+            <div class="flex items-end">
+                <button id="filter-btn" class="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition dark:bg-blue-700 dark:hover:bg-blue-800">Filtriraj</button>
+            </div>
+        </section>
+
+        <section>
+            <div id="list" class="space-y-4">
+                <p class="text-sm text-gray-500 dark:text-gray-400">Nalaganje vprašanj...</p>
+            </div>
+        </section>
+
+        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
+            <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
+        </footer>
+    </main>
+
+    <!-- Simple modal for editing -->
+    <div id="modal" class="hidden fixed inset-0 items-center justify-center modal-backdrop">
+        <div class="bg-white dark:bg-gray-800 rounded-lg shadow-lg max-w-2xl w-full p-6 mx-4">
+            <h2 class="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Uredi vprašanje</h2>
+            <form id="edit-form" class="space-y-3">
+                <input type="hidden" id="edit-id" />
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Besedilo</label>
+                    <textarea id="edit-text" rows="2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400"></textarea>
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Odgovori (v vrstnem redu)</label>
+                    <input id="edit-a0" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 mb-1" />
+                    <input id="edit-a1" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 mb-1" />
+                    <input id="edit-a2" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400 mb-1" />
+                    <input id="edit-a3" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400" />
+                </div>
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Pravilen odgovor (0-3)</label>
+                    <select id="edit-correct" class="w-full px-3 py-2 border border-gray-300 rounded-lg focus:border-blue-500 focus:outline-none focus:ring-2 focus:ring-blue-400 dark:border-gray-600 dark:hover:bg-gray-700 dark:bg-gray-800 dark:text-white dark:focus:border-blue-400">
+                        <option value="0">0</option>
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                    </select>
+                </div>
+
+                <div class="flex justify-end gap-2 pt-4">
+                    <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 rounded-lg transition">Prekliči</button>
+                    <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition dark:bg-green-700 dark:hover:bg-green-800">Shrani</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let ageGroups = [];
+        let categories = [];
+
+        async function loadFilters() {
+            const menu = await window.api.loadMenu();
+            ageGroups = menu.ageGroups || [];
+            categories = menu.categories || [];
+
+            const ageSelect = document.getElementById('filter-age');
+            ageSelect.innerHTML = '<option value="">Vse</option>';
+            ageGroups.forEach(g => {
+                const opt = document.createElement('option'); opt.value = g.id; opt.textContent = g.age_group; ageSelect.appendChild(opt);
+            });
+
+            const catSelect = document.getElementById('filter-cat');
+            catSelect.innerHTML = '<option value="">Vse</option>';
+            categories.forEach(c => {
+                const opt = document.createElement('option'); opt.value = c.id; opt.textContent = c.name; catSelect.appendChild(opt);
+            });
+        }
+
+        async function fetchAndRender() {
+            const age = document.getElementById('filter-age').value || null;
+            const cat = document.getElementById('filter-cat').value || null;
+            const filters = {};
+            if (age) filters.age_group_id = parseInt(age);
+            if (cat) filters.category_id = parseInt(cat);
+
+            const res = await window.api.listQuestions(filters);
+            const container = document.getElementById('list');
+            container.innerHTML = '';
+            if (!res || res.error) {
+                container.innerHTML = `<p class="text-sm text-rose-600">Napaka: ${res?.error || 'Neznana'}</p>`;
+                return;
+            }
+
+            const data = res.data || [];
+            if (data.length === 0) {
+                container.innerHTML = '<p class="text-sm text-gray-500">Ni najdenih vprašanj.</p>';
+                return;
+            }
+
+            data.forEach(q => {
+                const card = document.createElement('div');
+                card.className = 'p-4 border border-gray-200 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 flex flex-col sm:flex-row gap-4 items-start';
+                const left = document.createElement('div'); left.className = 'flex-1';
+                const title = document.createElement('div'); title.className = 'font-semibold text-gray-800 dark:text-white'; title.textContent = q.text;
+                const meta = document.createElement('div'); meta.className = 'text-xs text-gray-500 dark:text-gray-400';
+                const ageName = (ageGroups.find(a=>String(a.id)===String(q.age_group_id))||{}).age_group || q.age_group_id;
+                const catName = (categories.find(c=>String(c.id)===String(q.category_id))||{}).name || q.category_id;
+                meta.textContent = `Težavnost: ${ageName} · Predmet: ${catName}`;
+                left.appendChild(title); left.appendChild(meta);
+
+                const answers = document.createElement('ul'); answers.className = 'mt-2 text-sm list-decimal pl-5 text-gray-700 dark:text-gray-300';
+                (q.answers || []).forEach((a,i)=>{
+                    const li = document.createElement('li'); li.textContent = a + (i===q.correct_answer? ' ✅':'' ); answers.appendChild(li);
+                });
+                left.appendChild(answers);
+
+                const actions = document.createElement('div'); actions.className = 'flex flex-col gap-2 sm:items-end';
+                if (q.image_path) {
+                    const img = document.createElement('img'); img.src = q.image_path; img.className = 'max-h-24 rounded mb-2'; actions.appendChild(img);
+                }
+                const editBtn = document.createElement('button'); editBtn.className = 'px-3 py-1 bg-blue-600 hover:bg-blue-700 text-white rounded transition'; editBtn.textContent = 'Uredi';
+                const delBtn = document.createElement('button'); delBtn.className = 'px-3 py-1 bg-rose-500 hover:bg-rose-600 text-white rounded transition'; delBtn.textContent = 'Izbriši';
+
+                editBtn.addEventListener('click', ()=> openEditor(q));
+                delBtn.addEventListener('click', async ()=>{
+                    if (!confirm('Res želite izbrisati to vprašanje?')) return;
+                    const r = await window.api.deleteQuestion(q.id);
+                    if (!r || !r.success) { alert('Napaka: ' + (r?.error||'')); return; }
+                    fetchAndRender();
+                });
+
+                actions.appendChild(editBtn); actions.appendChild(delBtn);
+
+                card.appendChild(left); card.appendChild(actions);
+                container.appendChild(card);
+            });
+        }
+
+        function updateEditCorrectOptions(restoreIndex) {
+            const inputs = [
+                document.getElementById('edit-a0'),
+                document.getElementById('edit-a1'),
+                document.getElementById('edit-a2'),
+                document.getElementById('edit-a3')
+            ];
+            const raw = inputs.map(el => (el.value || '').trim());
+            const filtered = raw.map((text, i) => ({ text, i })).filter(x => x.text.length > 0);
+
+            const select = document.getElementById('edit-correct');
+            const previous = select.value;
+            select.innerHTML = '';
+            if (filtered.length === 0) {
+                const opt = document.createElement('option');
+                opt.value = '';
+                opt.textContent = 'Ni odgovorov';
+                select.appendChild(opt);
+                select.disabled = true;
+                return filtered;
+            }
+
+            for (let idx = 0; idx < filtered.length; idx++) {
+                const opt = document.createElement('option');
+                opt.value = String(idx);
+                const preview = filtered[idx].text.length > 60 ? filtered[idx].text.slice(0, 60) + '...' : filtered[idx].text;
+                opt.textContent = `${idx} — ${preview}`;
+                select.appendChild(opt);
+            }
+            select.disabled = false;
+
+            // restore selection: prefer explicit restoreIndex (index in filtered array), else try previous value
+            if (typeof restoreIndex === 'number' && restoreIndex >= 0 && restoreIndex < filtered.length) {
+                select.value = String(restoreIndex);
+            } else if (previous && select.querySelector(`option[value="${previous}"]`)) {
+                select.value = previous;
+            } else {
+                select.selectedIndex = 0;
+            }
+
+            return filtered;
+        }
+
+        function openEditor(q) {
+            document.getElementById('edit-id').value = q.id;
+            document.getElementById('edit-text').value = q.text || '';
+            const a = q.answers || [];
+            document.getElementById('edit-a0').value = a[0] || '';
+            document.getElementById('edit-a1').value = a[1] || '';
+            document.getElementById('edit-a2').value = a[2] || '';
+            document.getElementById('edit-a3').value = a[3] || '';
+
+            // populate options based on currently filled answers and try to map original correct answer
+            const filtered = updateEditCorrectOptions();
+            const origCorrectText = (q.answers && typeof q.correct_answer === 'number') ? q.answers[q.correct_answer] : null;
+            if (origCorrectText) {
+                const matchIdx = filtered.findIndex(f => f.text === origCorrectText);
+                if (matchIdx >= 0) {
+                    document.getElementById('edit-correct').value = String(matchIdx);
+                }
+            }
+
+            document.getElementById('modal').classList.remove('hidden');
+            document.getElementById('modal').classList.add('flex');
+        }
+
+        document.getElementById('cancel-edit').addEventListener('click', ()=>{
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+        });
+
+        // keep correct-answer options in sync with filled answer inputs
+        ['edit-a0','edit-a1','edit-a2','edit-a3'].forEach(id => {
+            const el = document.getElementById(id);
+            if (el) el.addEventListener('input', () => updateEditCorrectOptions());
+        });
+
+        document.getElementById('edit-form').addEventListener('submit', async (e)=>{
+            e.preventDefault();
+            const id = document.getElementById('edit-id').value;
+            const text = document.getElementById('edit-text').value.trim();
+            const rawAnswers = [
+                document.getElementById('edit-a0').value.trim(),
+                document.getElementById('edit-a1').value.trim(),
+                document.getElementById('edit-a2').value.trim(),
+                document.getElementById('edit-a3').value.trim()
+            ];
+            const answers = rawAnswers.filter(a=>a.length>0);
+            const correctSelect = document.getElementById('edit-correct');
+            const correct = parseInt(correctSelect.value);
+
+            if (!Array.isArray(answers) || answers.length < 2) {
+                alert('Vnesi vsaj 2 odgovora.');
+                return;
+            }
+            if (isNaN(correct) || correct < 0 || correct >= answers.length) {
+                alert('Izberi veljaven pravilen odgovor.');
+                return;
+            }
+
+            const payload = { id: parseInt(id), text, answers, correct_answer: correct };
+            const res = await window.api.updateQuestion(payload);
+            if (!res || !res.success) { alert('Napaka pri shranjevanju: ' + (res?.error||'')); return; }
+            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('modal').classList.remove('flex');
+            fetchAndRender();
+        });
+
+        document.getElementById('filter-btn').addEventListener('click', fetchAndRender);
+
+        (async ()=>{ await loadFilters(); await fetchAndRender(); })();
+    </script>
+    <script>
+        (async () => {
+            const shouldUseDark = await window.api.getTheme();
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        })();
+
+        window.api.onThemeChanged((shouldUseDark) => {
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        });
+    </script>
+</body>
+
+</html>

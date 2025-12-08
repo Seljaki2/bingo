@@ -48,4 +48,8 @@ contextBridge.exposeInMainWorld('api', {
     setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
     getTheme: () => ipcRenderer.invoke('get-theme'),
     onThemeChanged: (callback) => ipcRenderer.on('theme-changed', (_, shouldUseDark) => callback(shouldUseDark)),
+    // Questions management
+    listQuestions: (filters) => ipcRenderer.invoke('list-questions', filters),
+    deleteQuestion: (id) => ipcRenderer.invoke('delete-question', id),
+    updateQuestion: (question) => ipcRenderer.invoke('update-question', question),
 });
