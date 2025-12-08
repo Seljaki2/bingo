@@ -164,13 +164,16 @@ let win, add_player_window, add_age_group_window, add_category_window;
 
 const createWindow = () => {
     win = new BrowserWindow({
-        width: 800,
-        height: 1000,
+        width: 1200,
+        height: 900,
+        minWidth: 800,
+        minHeight: 700,
         webPreferences: {
             preload: path.join(__dirname, 'preload.js')
         }
     });
     win.loadFile('index.html');
+    try { win.maximize(); } catch (e) { }
     try {
         if (!isDev) {
             win.removeMenu();

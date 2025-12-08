@@ -89,6 +89,9 @@
 
             let timerInterval;
             //let timeRemaining = 30;  // Timer starts at 15 seconds
+            // per-question time (seconds) — will be computed based on selected age group
+            let questionTime = 30;
+            let timeRemaining;
             const progressBar = document.querySelector('.timerBar');
             const timerDisplay = document.querySelector('.px-3.py-1.bg-gray-200');
 
@@ -149,6 +152,22 @@
 
                 console.log(parameters.players);
 
+                // determine per-question time based on selected age group
+                try {
+                    const menu = await window.api.loadMenu();
+                    const ageGroups = (menu && menu.ageGroups) || [];
+                    const selectedAge = ageGroups.find(a => String(a.id) === String(parameters.grade) || a.id === parameters.grade);
+                    if (selectedAge && typeof selectedAge.min_age === 'number' && typeof selectedAge.max_age === 'number') {
+                        questionTime = computeQuestionTime(selectedAge.min_age, selectedAge.max_age);
+                    } else {
+                        // fallback: try numeric id mapping or default
+                        questionTime = 30;
+                    }
+                } catch (e) {
+                    console.warn('Failed to load age groups for timing, using default:', e);
+                    questionTime = 30;
+                }
+
                 const res = await window.api.startGame(parameters.grade, parameters.category, playerIds);
                 if (!res || res.error) {
                     console.error('startGame error', res?.error);
@@ -176,6 +195,22 @@
                 play();
                 startTimer();
                 return;
+            }
+
+            // Compute sensible per-question time (seconds) from age range
+            // Rules (sensible defaults):
+            // - very young children (<=10) get more time (45s)
+            // - teenagers get moderate time (30-40s)
+            // - adults get faster time (20-30s)
+            function computeQuestionTime(minAge, maxAge) {
+                const mid = (Number(minAge) + Number(maxAge)) / 2;
+                if (Number.isNaN(mid)) return 30;
+                if (mid <= 10) return 45;
+                if (mid <= 12) return 40;
+                if (mid <= 15) return 35;
+                if (mid <= 18) return 30;
+                if (mid <= 25) return 25;
+                return 20; // older than 25
             }
             function play() {
                 if (gameOver) return;
@@ -279,10 +314,9 @@
                     clearInterval(timerInterval);
                 }
                 if (gameOver) return;
-                timeRemaining = 30;
+                timeRemaining = Number.isFinite(questionTime) ? questionTime : 30;
                 updateTimerDisplay(timeRemaining);
                 updateProgressBar(timeRemaining);
-                // 1x na sekundo
                 timerInterval = setInterval(function () {
                     timeRemaining--;
                     updateTimerDisplay(timeRemaining);
@@ -318,8 +352,7 @@
             function renderBoards() {
                 const container = document.getElementById('boards');
                 container.innerHTML = '';
-                const cols = Math.max(1, Math.min(playerNames.length, 4));
-                container.style.gridTemplateColumns = `repeat(${cols}, minmax(0, 1fr))`;
+                container.style.gridTemplateColumns = `repeat(auto-fit, minmax(260px, 1fr))`;
                 playerNames.forEach((name, idx) => {
                     const panel = document.createElement('div');
                     panel.className = 'w-full max-w-[420px] p-4 rounded-2xl bg-white shadow-md transition-all';
