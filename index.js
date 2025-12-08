@@ -125,7 +125,6 @@ async function ensureSchema() {
 
 async function ensureAgeGroups() {
     const groups = [
-        { name: 'Otroci', min: 5, max: 10 },
         { name: 'Najstniki', min: 11, max: 19 }
     ];
     try {
@@ -172,14 +171,11 @@ const createWindow = () => {
         }
     });
     win.loadFile('index.html');
-    // Application menu / devtools behavior depends on dev mode
     try {
         if (!isDev) {
-            // Removes menu from this window for production
             win.removeMenu();
             Menu.setApplicationMenu(null);
         } else {
-            // In dev mode, open DevTools detached and keep the application menu
             win.webContents.openDevTools({ mode: 'detach' });
             console.log('Dev mode: opened DevTools for main window');
         }

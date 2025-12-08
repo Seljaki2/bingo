@@ -252,7 +252,6 @@
                     button.classList.remove("border-blue-500", "shadow-md", "selected");
                     button.style.animation = "";
                     button.style.color = '';
-                    // Also clear the correct answer animation if it was set
                     if (!isCorrectAnswer && gameData[questionIndex]) {
                         const correctIndex = gameData[questionIndex].correct_answer;
                         const correctBtn = document.getElementById(String(correctIndex));
