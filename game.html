@@ -34,7 +34,7 @@
             <h1 class="text-3xl font-bold text-center flex-1 text-gray-800 dark:text-white">Quiz Bingo! 🎯</h1>
             <button onclick="window.location.href='index.html'"
                 class="px-4 py-2 rounded-lg border border-gray-300 hover:bg-gray-100 dark:border-gray-600 dark:hover:bg-gray-700 transition-colors font-semibold dark:text-white">
-                Nova igra
+                Nazaj na meni
             </button>
         </div>
         <!-- Question Card -->
@@ -220,11 +220,23 @@
                         boards[pIdx] = result.board;
                         updateBoard(pIdx);
                     }
-                    // Apply visual feedback: flash red for wrong, green for correct
                     if (isCorrectAnswer) {
                         button.style.animation = "correctFlash 0.6s ease-in-out 2";
                     } else {
                         button.style.animation = "wrongFlash 0.6s ease-in-out 2";
+                        // If wrong answer, flash the correct answer button green
+                        if (gameData[questionIndex]) {
+                            const correctIndex = gameData[questionIndex].correct_answer;
+                            console.log('Wrong answer selected. Correct index:', correctIndex, 'Question:', gameData[questionIndex]);
+                            const correctBtn = document.getElementById(String(correctIndex));
+                            console.log('Correct button found:', correctBtn);
+                            if (correctBtn) {
+                                // Remove opacity to make animation visible
+                                correctBtn.classList.remove('opacity-60');
+                                correctBtn.style.animation = "correctFlash 0.6s ease-in-out 2";
+                                console.log('Applied animation to correct button');
+                            }
+                        }
                     }
                     if (result?.bingo) {
                         await endGame(pIdx);
@@ -240,6 +252,15 @@
                     button.classList.remove("border-blue-500", "shadow-md", "selected");
                     button.style.animation = "";
                     button.style.color = '';
+                    // Also clear the correct answer animation if it was set
+                    if (!isCorrectAnswer && gameData[questionIndex]) {
+                        const correctIndex = gameData[questionIndex].correct_answer;
+                        const correctBtn = document.getElementById(String(correctIndex));
+                        if (correctBtn) {
+                            correctBtn.style.animation = "";
+                            correctBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+                        }
+                    }
                     enableAnswerButtons();
                 }, 1000);
             }
