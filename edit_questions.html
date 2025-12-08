@@ -81,6 +81,15 @@
                     </select>
                 </div>
 
+                <div>
+                    <label class="block text-sm font-semibold text-gray-700 dark:text-gray-300">Slika (opcijsko)</label>
+                    <input id="edit-image" type="file" accept="image/*" class="w-full" />
+                    <p id="edit-image-hint" class="text-xs text-gray-500 dark:text-gray-400 mt-1">Izberi novo sliko, da zamenja obstoječo (večji se bodo avtomatsko pretvorili v base64).</p>
+                    <div id="edit-image-preview-wrap" class="mt-2 hidden">
+                        <img id="edit-image-preview" src="" alt="Preview" class="max-h-40 rounded" />
+                    </div>
+                </div>
+
                 <div class="flex justify-end gap-2 pt-4">
                     <button type="button" id="cancel-edit" class="px-4 py-2 border border-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white dark:border-gray-600 rounded-lg transition">Prekliči</button>
                     <button type="submit" class="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition dark:bg-green-700 dark:hover:bg-green-800">Shrani</button>
@@ -90,8 +99,10 @@
     </div>
 
     <script>
-        let ageGroups = [];
-        let categories = [];
+    let ageGroups = [];
+    let categories = [];
+    // holds current image data for the editor (data URL) — will override existing image when set
+    let editImageData = null;
 
         async function loadFilters() {
             const menu = await window.api.loadMenu();
@@ -222,7 +233,20 @@
             document.getElementById('edit-a1').value = a[1] || '';
             document.getElementById('edit-a2').value = a[2] || '';
             document.getElementById('edit-a3').value = a[3] || '';
-
+            // image handling: show existing image (if any) and reset any selected file
+            editImageData = q.image_path || null;
+            const previewWrap = document.getElementById('edit-image-preview-wrap');
+            const preview = document.getElementById('edit-image-preview');
+            const fileInput = document.getElementById('edit-image');
+            if (editImageData) {
+                preview.src = editImageData;
+                previewWrap.classList.remove('hidden');
+            } else {
+                preview.src = '';
+                previewWrap.classList.add('hidden');
+            }
+            // clear file input so selecting same file again still triggers change
+            try { fileInput.value = ''; } catch (e) { }
             // populate options based on currently filled answers and try to map original correct answer
             const filtered = updateEditCorrectOptions();
             const origCorrectText = (q.answers && typeof q.correct_answer === 'number') ? q.answers[q.correct_answer] : null;
@@ -248,6 +272,26 @@
             if (el) el.addEventListener('input', () => updateEditCorrectOptions());
         });
 
+        // read selected image file and convert to base64 data URL
+        const editImageInput = document.getElementById('edit-image');
+        if (editImageInput) {
+            editImageInput.addEventListener('change', (ev) => {
+                const f = ev.target.files && ev.target.files[0];
+                if (!f) return;
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const dataUrl = e.target.result;
+                    // store data url (base64) and show preview
+                    editImageData = dataUrl;
+                    const previewWrap = document.getElementById('edit-image-preview-wrap');
+                    const preview = document.getElementById('edit-image-preview');
+                    preview.src = dataUrl;
+                    previewWrap.classList.remove('hidden');
+                };
+                reader.readAsDataURL(f);
+            });
+        }
+
         document.getElementById('edit-form').addEventListener('submit', async (e)=>{
             e.preventDefault();
             const id = document.getElementById('edit-id').value;
@@ -272,6 +316,8 @@
             }
 
             const payload = { id: parseInt(id), text, answers, correct_answer: correct };
+            // include image data if present (overrides existing image_path in DB)
+            if (editImageData) payload.image_path = editImageData;
             const res = await window.api.updateQuestion(payload);
             if (!res || !res.success) { alert('Napaka pri shranjevanju: ' + (res?.error||'')); return; }
             document.getElementById('modal').classList.add('hidden');
