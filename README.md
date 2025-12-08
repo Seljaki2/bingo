@@ -3,9 +3,7 @@ To je repozitorij skupine Digitalna Brigada & Seljaki2 za prvo vajo pri predmetu
 
 Zagon je najlažji preko terminala, s pomočjo ukaza `npm start`.
 
-## Dokumentacija funkcij (po datotekah)
-
-Spodaj so na kratko dokumentirane funkcije, razdeljene po izvornih datotekah. Za vsako funkcijo so navedeni vhodni parametri, kaj vrača in kaj počne (max 3 stavki).
+## Dokumentacija funkcij
 
 ### `index.html`
 
