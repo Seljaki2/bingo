@@ -47,6 +47,7 @@
             <div id="list" class="space-y-4">
                 <p class="text-sm text-gray-500 dark:text-gray-400">Nalaganje vprašanj...</p>
             </div>
+            <div id="pagination" class="mt-4 flex items-center justify-center gap-2"></div>
         </section>
 
         <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
@@ -101,8 +102,64 @@
     <script>
     let ageGroups = [];
     let categories = [];
-    // holds current image data for the editor (data URL) — will override existing image when set
     let editImageData = null;
+    let currentPage = 1;
+    const PAGE_SIZE = 6; 
+    function renderPagination(totalItems) {
+        const container = document.getElementById('pagination');
+        container.innerHTML = '';
+        const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+
+        const info = document.createElement('div');
+        info.className = 'text-sm text-gray-600 dark:text-gray-300 px-2';
+        info.textContent = `Stran ${currentPage} od ${totalPages}`;
+
+        const prev = document.createElement('button');
+        prev.textContent = 'Prejšnja';
+        prev.disabled = currentPage <= 1;
+        prev.className = prev.disabled
+            ? 'px-3 py-1 rounded border text-gray-400 bg-gray-100 cursor-not-allowed dark:bg-gray-800/60 dark:text-gray-500 dark:border-gray-700'
+            : 'px-3 py-1 rounded border text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:border-gray-600 border-gray-200';
+        prev.addEventListener('click', () => gotoPage(currentPage - 1));
+
+        const next = document.createElement('button');
+        next.textContent = 'Naslednja';
+        next.disabled = currentPage >= totalPages;
+        next.className = next.disabled
+            ? 'px-3 py-1 rounded border text-gray-400 bg-gray-100 cursor-not-allowed dark:bg-gray-800/60 dark:text-gray-500 dark:border-gray-700'
+            : 'px-3 py-1 rounded border text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700 dark:border-gray-600 border-gray-200';
+        next.addEventListener('click', () => gotoPage(currentPage + 1));
+
+        const pagesWrap = document.createElement('div');
+        pagesWrap.className = 'flex items-center gap-1';
+        const maxButtons = 7;
+        let start = Math.max(1, currentPage - 3);
+        let end = Math.min(totalPages, start + maxButtons - 1);
+        if (end - start < maxButtons - 1) start = Math.max(1, end - maxButtons + 1);
+        for (let p = start; p <= end; p++) {
+            const b = document.createElement('button');
+            const isCurrent = p === currentPage;
+            b.textContent = String(p);
+            b.disabled = isCurrent;
+            if (isCurrent) {
+                b.className = 'px-2 py-1 rounded bg-blue-600 text-white';
+            } else {
+                b.className = 'px-2 py-1 rounded text-gray-700 bg-white hover:bg-gray-100 dark:bg-gray-800 dark:text-gray-200 dark:hover:bg-gray-700';
+            }
+            b.addEventListener('click', () => gotoPage(p));
+            pagesWrap.appendChild(b);
+        }
+
+        container.appendChild(prev);
+        container.appendChild(pagesWrap);
+        container.appendChild(next);
+        container.appendChild(info);
+    }
+
+    function gotoPage(page) {
+        currentPage = Math.max(1, Math.floor(page));
+        fetchAndRender();
+    }
 
         async function loadFilters() {
             const menu = await window.api.loadMenu();
@@ -138,12 +195,21 @@
             }
 
             const data = res.data || [];
+            const totalItems = data.length;
+            const totalPages = Math.max(1, Math.ceil(totalItems / PAGE_SIZE));
+            if (currentPage > totalPages) currentPage = totalPages;
+
             if (data.length === 0) {
                 container.innerHTML = '<p class="text-sm text-gray-500">Ni najdenih vprašanj.</p>';
+                renderPagination(0);
                 return;
             }
 
-            data.forEach(q => {
+            // slice data for current page
+            const startIdx = (currentPage - 1) * PAGE_SIZE;
+            const pageData = data.slice(startIdx, startIdx + PAGE_SIZE);
+
+            pageData.forEach(q => {
                 const card = document.createElement('div');
                 card.className = 'p-4 border border-gray-200 rounded-lg bg-white dark:bg-gray-700 dark:border-gray-600 flex flex-col sm:flex-row gap-4 items-start';
                 const left = document.createElement('div'); left.className = 'flex-1';
@@ -180,6 +246,7 @@
                 card.appendChild(left); card.appendChild(actions);
                 container.appendChild(card);
             });
+            renderPagination(totalItems);
         }
 
         function updateEditCorrectOptions(restoreIndex) {
@@ -325,7 +392,7 @@
             fetchAndRender();
         });
 
-        document.getElementById('filter-btn').addEventListener('click', fetchAndRender);
+    document.getElementById('filter-btn').addEventListener('click', () => { currentPage = 1; fetchAndRender(); });
 
         (async ()=>{ await loadFilters(); await fetchAndRender(); })();
     </script>
