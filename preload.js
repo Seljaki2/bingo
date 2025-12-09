@@ -24,10 +24,11 @@ contextBridge.exposeInMainWorld('api', {
     startGame: (group, categories, players) =>
         ipcRenderer.invoke('startGame', { group, categories, players }),
 
-    // Submits an answer and returns correctness, bingo, and updated board
+    // Submits an answer and returns correctness, bingo, updated board and points awarded
     // `tile` is optional: { r: number, c: number } to mark a specific board cell when correct
-    answer: (playerId, questionId, selectedIndex, tile) =>
-        ipcRenderer.invoke('answer', { playerId, questionId, selectedIndex, tile }),
+    // `timeInfo` is optional: { timeRemaining, questionTime }
+    answer: (playerId, questionId, selectedIndex, tile, timeInfo) =>
+        ipcRenderer.invoke('answer', { playerId, questionId, selectedIndex, tile, timeInfo }),
 
     endGame: () => ipcRenderer.invoke('endGame'),
 

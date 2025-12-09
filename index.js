@@ -653,7 +653,7 @@ ipcMain.handle('startGame', async (event, { group, categories, players }) => {
  * Params: { playerId, questionId, selectedIndex }
  * Returns: { correct, bingo, board }
  */
-ipcMain.handle('answer', async (event, { playerId, questionId, selectedIndex, tile }) => {
+ipcMain.handle('answer', async (event, { playerId, questionId, selectedIndex, tile, timeInfo }) => {
     try {
         let existing;
         let stringBuilder;
@@ -683,9 +683,26 @@ ipcMain.handle('answer', async (event, { playerId, questionId, selectedIndex, ti
 
         const correct = data.correct_answer === selectedIndex;
         let bingo = false;
+        let awarded = 0;
 
         if (correct) {
-            currentGame.players.find(p => p.id === playerId).score += 10;
+            // compute time-based bonus
+            let timeBonus = 0;
+            try {
+                const tr = timeInfo && typeof timeInfo.timeRemaining === 'number' ? Number(timeInfo.timeRemaining) : null;
+                const qt = timeInfo && typeof timeInfo.questionTime === 'number' ? Number(timeInfo.questionTime) : null;
+                if (tr !== null && qt !== null && Number.isFinite(tr) && Number.isFinite(qt) && qt > 0) {
+                    // clamp
+                    const safeTr = Math.max(0, Math.min(tr, qt));
+                    // bonus up to 10 points proportional to fraction of time left
+                    timeBonus = Math.round((safeTr / qt) * 10);
+                }
+            } catch (e) {
+                timeBonus = 0;
+            }
+            const basePoints = 10;
+            awarded = basePoints + timeBonus;
+            currentGame.players.find(p => p.id === playerId).score += awarded;
             currentGame.players.find(p => p.id === playerId).correctNum += 1;
             // If client provided a specific tile, and it's valid & not yet selected, use it.
             let marked = false;
@@ -715,7 +732,7 @@ ipcMain.handle('answer', async (event, { playerId, questionId, selectedIndex, ti
         }
         currentGame.currentPlayerIndex =
             (currentGame.currentPlayerIndex + 1) % currentGame.players.length;
-        return { correct, bingo, board: player.board };
+        return { correct, bingo, board: player.board, pointsAwarded: correct ? (typeof awarded === 'number' ? awarded : 10) : 0 };
     } catch (err) {
         console.error(err);
         return { error: err.message };
