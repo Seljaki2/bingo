@@ -9,21 +9,20 @@
 </head>
 
 <body
-    class="min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 p-6 flex items-center justify-center font-sans">
-    <main class="w-full max-w-md bg-white/90 rounded-2xl shadow-lg p-6 space-y-4">
+    class="min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-700 p-6 flex items-center justify-center font-sans">
+    <main class="w-full max-w-md bg-white/90 rounded-2xl shadow-lg p-6 space-y-4 dark:bg-gray-800/80 dark:border dark:border-gray-700">
         <header class="flex items-center justify-between">
-            <h2 id="username" class="text-xl font-semibold text-gray-800">User</h2>
-            <button id="closeBtn" class="text-sm text-rose-600">Zapri</button>
+            <h2 id="username" class="text-xl font-semibold text-gray-800 dark:text-white">User</h2>
         </header>
 
         <section>
-            <h3 class="text-sm text-gray-600 mb-2">Top 3 igre (po rezultatu)</h3>
+            <h3 class="text-sm text-gray-600 dark:text-gray-300 mb-2">Top 3 igre (po rezultatu)</h3>
             <div id="games" class="space-y-2">
-                <p class="text-sm text-gray-500">Nalaganje ...</p>
+                <p class="text-sm text-gray-500 dark:text-gray-400">Nalaganje ...</p>
             </div>
         </section>
 
-        <footer class="text-sm text-gray-500 text-center">
+        <footer class="text-sm text-gray-500 dark:text-gray-400 text-center">
             <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
         </footer>
     </main>
@@ -37,13 +36,13 @@
         async function load() {
             const id = qs('id');
             if (!id) {
-                document.getElementById('games').innerHTML = '<div class="text-red-600">Missing user id</div>';
+                document.getElementById('games').innerHTML = '<div class="text-red-600 dark:text-red-400">Missing user id</div>';
                 return;
             }
             try {
                 const res = await window.api.getUserStats(id);
                 if (res?.error) {
-                    document.getElementById('games').innerHTML = `<div class="text-red-600">${res.error}</div>`;
+                    document.getElementById('games').innerHTML = `<div class="text-red-600 dark:text-red-400">${res.error}</div>`;
                     return;
                 }
                 const user = res.user || { first_name: '', last_name: '', username: '' };
@@ -55,30 +54,49 @@
                 const container = document.getElementById('games');
                 container.innerHTML = '';
                 if (!top.length) {
-                    container.innerHTML = '<div class="text-sm text-gray-500">Uporabnik nima rezultatov.</div>';
+                    container.innerHTML = '<div class="text-sm text-gray-500 dark:text-gray-400">Uporabnik nima rezultatov.</div>';
                     return;
                 }
                 top.forEach((g, i) => {
+                    const displayDate = g.created_at ? new Date(g.created_at).toLocaleString() : (g.game_id || '—').slice(0, 8);
                     const el = document.createElement('div');
-                    el.className = 'p-3 border rounded-lg bg-white/50';
+                    el.className = 'p-3 border rounded-lg bg-white/50 dark:bg-gray-700/50 dark:border-gray-600';
                     el.innerHTML = `
                         <div class="flex justify-between items-center">
                             <div>
-                                <div class="text-sm font-semibold">Igra ${g.game_id || '—'}</div>
-                                <div class="text-xs text-gray-500">Datum: ${g.created_at ? new Date(g.created_at).toLocaleString() : '—'}</div>
+                                <div class="text-sm font-semibold text-gray-800 dark:text-white">Igra - ${displayDate}</div>
                             </div>
-                            <div class="text-lg font-bold text-blue-600">${g.score}</div>
+                            <div class="text-lg font-bold text-blue-600 dark:text-blue-400">${g.score}</div>
                         </div>
                     `;
                     container.appendChild(el);
                 });
             } catch (e) {
-                document.getElementById('games').innerHTML = `<div class="text-red-600">${e?.message || e}</div>`;
+                document.getElementById('games').innerHTML = `<div class="text-red-600 dark:text-red-400">${e?.message || e}</div>`;
             }
         }
 
-        document.getElementById('closeBtn').addEventListener('click', () => window.close());
         load();
+    </script>
+    <script>
+        (async () => {
+            const shouldUseDark = await window.api.getTheme();
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        })();
+
+        window.api.onThemeChanged((shouldUseDark) => {
+            const html = document.documentElement;
+            if (shouldUseDark) {
+                html.classList.add('dark');
+            } else {
+                html.classList.remove('dark');
+            }
+        });
     </script>
 </body>
 
