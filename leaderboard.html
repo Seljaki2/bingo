@@ -63,10 +63,10 @@
 
         function setTriadActive(btn, active) {
             if (active) {
-                btn.classList.add('bg-yellow-200', 'dark:bg-blue-700', 'text-gray-800', 'dark:text-white', 'border', 'border-blue-600');
+                btn.classList.add('bg-yellow-200', 'dark:bg-orange-500', 'text-gray-800', 'dark:text-white', 'border', 'dark:border-orange-600', 'border-yellow-300');
                 btn.classList.remove('bg-white', 'dark:bg-gray-800', 'text-gray-700');
             } else {
-                btn.classList.remove('bg-yellow-200', 'dark:bg-blue-700', 'text-gray-800', 'dark:text-white', 'border', 'border-blue-600');
+                btn.classList.remove('bg-yellow-200', 'dark:bg-orange-500', 'text-gray-800', 'dark:text-white', 'border', 'dark:border-orange-600', 'border-yellow-300');
                 btn.classList.add('bg-white', 'dark:bg-gray-800', 'text-gray-700', 'dark:text-white');
             }
         }
@@ -83,7 +83,7 @@
                 triadTabsContainer.innerHTML = '';
                 ageGroups.forEach((g, index) => {
                     const btn = document.createElement('button');
-                        btn.className = 'tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 dark:text-white bg-white dark:bg-gray-800 hover:bg-yellow-100 dark:hover:bg-blue-600';
+                        btn.className = 'tab-button px-4 py-2 rounded-lg font-semibold text-gray-700 dark:text-white bg-white dark:bg-gray-800 hover:bg-yellow-100 dark:hover:bg-orange-400';
                     btn.dataset.triad = g.age_group;
                     btn.textContent = g.age_group;
                     if (index === 0) {
