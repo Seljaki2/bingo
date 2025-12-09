@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>User Details</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body
+    class="min-h-screen bg-gradient-to-br from-yellow-50 via-pink-50 to-blue-50 p-6 flex items-center justify-center font-sans">
+    <main class="w-full max-w-md bg-white/90 rounded-2xl shadow-lg p-6 space-y-4">
+        <header class="flex items-center justify-between">
+            <h2 id="username" class="text-xl font-semibold text-gray-800">User</h2>
+            <button id="closeBtn" class="text-sm text-rose-600">Zapri</button>
+        </header>
+
+        <section>
+            <h3 class="text-sm text-gray-600 mb-2">Top 3 igre (po rezultatu)</h3>
+            <div id="games" class="space-y-2">
+                <p class="text-sm text-gray-500">Nalaganje ...</p>
+            </div>
+        </section>
+
+        <footer class="text-sm text-gray-500 text-center">
+            <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
+        </footer>
+    </main>
+
+    <script>
+        function qs(name) {
+            const params = new URLSearchParams(location.search);
+            return params.get(name);
+        }
+
+        async function load() {
+            const id = qs('id');
+            if (!id) {
+                document.getElementById('games').innerHTML = '<div class="text-red-600">Missing user id</div>';
+                return;
+            }
+            try {
+                const res = await window.api.getUserStats(id);
+                if (res?.error) {
+                    document.getElementById('games').innerHTML = `<div class="text-red-600">${res.error}</div>`;
+                    return;
+                }
+                const user = res.user || { first_name: '', last_name: '', username: '' };
+                const top = res.topGames || [];
+                const usernameEl = document.getElementById('username');
+                const label = user.username ? `${user.username} (${user.first_name} ${user.last_name})` : `${user.first_name} ${user.last_name}`;
+                usernameEl.textContent = label;
+
+                const container = document.getElementById('games');
+                container.innerHTML = '';
+                if (!top.length) {
+                    container.innerHTML = '<div class="text-sm text-gray-500">Uporabnik nima rezultatov.</div>';
+                    return;
+                }
+                top.forEach((g, i) => {
+                    const el = document.createElement('div');
+                    el.className = 'p-3 border rounded-lg bg-white/50';
+                    el.innerHTML = `
+                        <div class="flex justify-between items-center">
+                            <div>
+                                <div class="text-sm font-semibold">Igra ${g.game_id || '—'}</div>
+                                <div class="text-xs text-gray-500">Datum: ${g.created_at ? new Date(g.created_at).toLocaleString() : '—'}</div>
+                            </div>
+                            <div class="text-lg font-bold text-blue-600">${g.score}</div>
+                        </div>
+                    `;
+                    container.appendChild(el);
+                });
+            } catch (e) {
+                document.getElementById('games').innerHTML = `<div class="text-red-600">${e?.message || e}</div>`;
+            }
+        }
+
+        document.getElementById('closeBtn').addEventListener('click', () => window.close());
+        load();
+    </script>
+</body>
+
+</html>

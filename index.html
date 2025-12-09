@@ -50,7 +50,9 @@
         <header class="text-center space-y-2">
             <div class="flex justify-center items-center space-x-4">
                 <h1 class="text-3xl font-bold text-gray-800 dark:text-white">Bingo kviz🎯</h1>
-                <button id="dark-mode-toggle" class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors" onclick="toggleDarkMode()">
+                <button id="dark-mode-toggle"
+                    class="p-2 rounded-full bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white transition-colors"
+                    onclick="toggleDarkMode()">
                     🌙
                 </button>
             </div>
@@ -114,7 +116,8 @@
             </div>
         </form>
 
-        <footer class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
+        <footer
+            class="pt-6 text-center text-sm text-gray-500 border-t border-gray-200 dark:text-gray-400 dark:border-gray-700">
             <span class="font-semibold">Digitalna Brigada & Seljaki2</span>
         </footer>
     </main>
@@ -320,6 +323,15 @@
 
             const name = document.createElement('div');
             name.textContent = `${player.first_name} ${player.last_name}`;
+            // clicking the name opens the user detail modal (if user has an id)
+            name.style.cursor = 'pointer';
+            name.title = 'Poglej profil igralca';
+            name.addEventListener('click', (ev) => {
+                ev.stopPropagation();
+                if (player && player.id) {
+                    window.api.openUserWindow(player.id);
+                }
+            });
 
             const controls = document.createElement('div');
             controls.className = 'flex items-center gap-2';

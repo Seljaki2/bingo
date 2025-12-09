@@ -297,6 +297,44 @@ app.whenReady().then(async () => {
             return { success: false, error: err.message };
         }
     });
+
+    // Open a modal window to show user details (username + top 3 games)
+    ipcMain.handle('open-user-window', async (_, userId) => {
+        try {
+            const userWin = new BrowserWindow({
+                width: 520,
+                height: 420,
+                parent: win,
+                modal: true,
+                resizable: false,
+                webPreferences: { preload: path.join(__dirname, 'preload.js') }
+            });
+            const filePath = path.join(__dirname, 'user_detail.html');
+            await userWin.loadURL(`file://${filePath}?id=${encodeURIComponent(String(userId))}`);
+            return { success: true };
+        } catch (err) {
+            console.error('Failed to open user window', err);
+            return { success: false, error: err.message || String(err) };
+        }
+    });
+
+    // Return user info and top 3 games by score
+    ipcMain.handle('get-user-stats', async (_, userId) => {
+        try {
+            if (!userId) return { error: 'Missing user id' };
+            const uid = Number(userId);
+            const [{ data: user, error: userErr }, { data: topGames, error: lbErr }] = await Promise.all([
+                supabase.from('User').select('id, username, first_name, last_name').eq('id', uid).maybeSingle(),
+                supabase.from('Leaderboard').select('score, game_id, created_at, age_group_id').eq('user_id', uid).order('score', { ascending: false }).limit(3)
+            ]);
+            if (userErr) throw userErr;
+            if (lbErr) throw lbErr;
+            return { user, topGames };
+        } catch (err) {
+            console.error('get-user-stats error', err);
+            return { error: err.message || String(err) };
+        }
+    });
     try {
         await ensureSchema();
     } catch (err) {

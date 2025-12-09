@@ -9,6 +9,7 @@ contextBridge.exposeInMainWorld('api', {
     },
     openAddAgeGroupWindow: () => ipcRenderer.send('open-add-age-group'),
     openAddCategoryWindow: () => ipcRenderer.send('open-add-category'),
+    openUserWindow: (userId) => ipcRenderer.invoke('open-user-window', userId),
     registerPlayer: (player) => ipcRenderer.invoke('register-player', player),
     loginPlayer: (creds) => ipcRenderer.invoke('login-player', creds),
     onPlayerAdded: (callback) => ipcRenderer.on('player-added', (_, player) => callback(player)),
@@ -35,7 +36,7 @@ contextBridge.exposeInMainWorld('api', {
 
     onAgeGroupAdded: (cb) => ipcRenderer.on('age-group-added', (_, payload) => cb(payload)),
     onCategoryAdded: (cb) => ipcRenderer.on('category-added', (_, payload) => cb(payload)),
-    
+
     deleteAgeGroup: (id) => ipcRenderer.invoke('delete-age-group', id),
     deleteCategory: (id) => ipcRenderer.invoke('delete-category', id),
     onAgeGroupDeleted: (cb) => ipcRenderer.on('age-group-deleted', (_, payload) => cb(payload)),
@@ -44,6 +45,9 @@ contextBridge.exposeInMainWorld('api', {
     // Adds a new question. `question` should include: text, answers (array), correct_answer (int),
     // category_id, age_group_id, and optionally image_path (local file path from renderer).
     addQuestion: (question) => ipcRenderer.invoke('addQuestion', question),
+
+    // User details
+    getUserStats: (userId) => ipcRenderer.invoke('get-user-stats', userId),
 
     setTheme: (theme) => ipcRenderer.invoke('set-theme', theme),
     getTheme: () => ipcRenderer.invoke('get-theme'),
