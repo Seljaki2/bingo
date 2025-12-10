@@ -189,21 +189,11 @@
                 container.appendChild(section);
             });
 
-            // Attach toggle listeners for newly rendered game sections
-            const newGameToggles = container.querySelectorAll('.game-toggle');
-            newGameToggles.forEach(btn => {
-                btn.addEventListener('click', () => {
-                    const list = btn.nextElementSibling;
-                    const arrow = btn.querySelector('.arrow');
-                    if (list.style.display === 'none') {
-                        list.style.display = 'block';
-                        arrow.textContent = '▲';
-                    } else {
-                        list.style.display = 'none';
-                        arrow.textContent = '▼';
-                    }
-                });
+            // ensure newly rendered sections start collapsed (arrow set)
+            container.querySelectorAll('.game-list').forEach(list => {
+                if (!list.style.display) list.style.display = 'none';
             });
+            container.querySelectorAll('.game-toggle .arrow').forEach(a => a.textContent = '▼');
         }
 
         // Events
@@ -229,20 +219,24 @@
                 });
             });
 
-            const gameToggles = document.querySelectorAll('.game-toggle');
-            gameToggles.forEach(btn => {
-                btn.addEventListener('click', () => {
+            // Use event delegation on container so toggles work after every re-render.
+            if (!container._hasToggleDelegation) {
+                container.addEventListener('click', (ev) => {
+                    const btn = ev.target.closest && ev.target.closest('.game-toggle');
+                    if (!btn) return;
                     const list = btn.nextElementSibling;
                     const arrow = btn.querySelector('.arrow');
-                    if (list.style.display === 'none') {
+                    if (!list) return;
+                    if (getComputedStyle(list).display === 'none') {
                         list.style.display = 'block';
-                        arrow.textContent = '▲';
+                        if (arrow) arrow.textContent = '▲';
                     } else {
                         list.style.display = 'none';
-                        arrow.textContent = '▼';
+                        if (arrow) arrow.textContent = '▼';
                     }
                 });
-            });
+                container._hasToggleDelegation = true;
+            }
         }
 
         document.getElementById('backButton').addEventListener('click', () => {
